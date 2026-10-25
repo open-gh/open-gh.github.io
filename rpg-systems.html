@@ -1,0 +1,889 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPG 시스템 정리</title><style>
+:root{--bg:#fbfbfa;--fg:#1d1f23;--muted:#5d6470;--line:#d9dce1;--card:#ffffff;--head:#eef1f5;--accent:#2f5bd3;
+--live:#1d7a46;--live-bg:#e3f4ea;--b4:#8a5a00;--b4-bg:#fdf0d2;--plan:#4a5160;--plan-bg:#e9ebef;--diff:#a3242b;--diff-bg:#fbe3e4;--code:#f2f3f5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15171b;--fg:#e6e8eb;--muted:#9aa3ae;--line:#33373e;--card:#1c1f24;--head:#252930;--accent:#7ea2ff;
+--live:#7fd9a2;--live-bg:#173525;--b4:#f2c46b;--b4-bg:#3a2c0d;--plan:#c3c8d1;--plan-bg:#2b2f36;--diff:#ff9da2;--diff-bg:#401a1d;--code:#23262c}}
+:root[data-theme="dark"]{--bg:#15171b;--fg:#e6e8eb;--muted:#9aa3ae;--line:#33373e;--card:#1c1f24;--head:#252930;--accent:#7ea2ff;
+--live:#7fd9a2;--live-bg:#173525;--b4:#f2c46b;--b4-bg:#3a2c0d;--plan:#c3c8d1;--plan-bg:#2b2f36;--diff:#ff9da2;--diff-bg:#401a1d;--code:#23262c}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:28px;margin:8px 0 4px}
+h2{font-size:22px;margin:40px 0 12px;padding-top:12px;border-top:2px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px}
+p,li{max-width:80ch}
+a{color:var(--accent)}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}
+.sub{color:var(--muted);margin:0 0 16px}
+.b{display:inline-block;font-size:12px;line-height:18px;padding:0 7px;border-radius:9px;font-weight:600;vertical-align:middle;white-space:nowrap}
+.b-live{color:var(--live);background:var(--live-bg)}.b-b4{color:var(--b4);background:var(--b4-bg)}
+.b-plan{color:var(--plan);background:var(--plan-bg)}.b-diff{color:var(--diff);background:var(--diff-bg)}
+.tw{overflow-x:auto;margin:8px 0 2px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--head);position:sticky;top:0;font-weight:600;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+caption{caption-side:top;text-align:left;padding:6px 8px;color:var(--muted)}
+.src{font-size:12px;color:var(--muted);margin:2px 0 14px}
+.toc{columns:2;column-gap:32px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 20px}
+.toc ol{margin:0;padding-left:20px}.toc li{break-inside:avoid}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tile .k{font-size:12px;color:var(--muted)}.tile .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .d{font-size:12px;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:10px 0}
+.flow div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;flex:1 1 150px}
+.flow b{display:block}
+.flow .ar{flex:0 0 auto;border:0;background:none;align-self:center;color:var(--muted);padding:0}
+.legend span{margin-right:8px}
+.note{background:var(--card);border-left:3px solid var(--accent);padding:8px 12px;margin:10px 0;font-size:14px}
+@media (max-width:640px){.toc{columns:1}h1{font-size:23px}}
+@media print{
+ :root{--bg:#fff;--fg:#000;--card:#fff;--head:#eee;--line:#bbb;--muted:#444}
+ body{background:#fff;color:#000;font-size:11px}
+ main{max-width:none;padding:0}
+ .tw{overflow:visible;border:0}
+ table{font-size:10px}
+ th{position:static}
+ thead{display:table-header-group}
+ tr,img,.tile,.note{break-inside:avoid;page-break-inside:avoid}
+ h2,h3{break-after:avoid;page-break-after:avoid}
+ h2{break-before:auto}
+ a{color:#000;text-decoration:none}
+ .b{border:1px solid #888}
+}
+</style></head><body><main>
+<h1>RPG 시스템 정리</h1>
+<p class="sub">Create 6.0.10 / NeoForge 1.21.1 서버 · 2026-10-24 기준 · 정본 = 저장소 데이터·설정 파일(설계 문서는 설명용, 어긋나면 데이터 기준 + 「문서와 다름」 표시)</p>
+<p class="legend"><span class="b b-live">라이브</span>지금 서버에 있음(jar c12482eb) <span class="b b-b4">묶음 4</span>다음 재시작 묶음 4(jar 93ed592d 빌드 끝·스테이징 전) <span class="b b-plan">예정</span>설계만 <span class="b b-diff">문서와 다름</span>설계 문서와 데이터가 다름</p>
+<p class="sub">상태 판정 근거: <code>PROGRESS.md</code> 맨 위 블록(10-24 22:4x)과 20:2x 요약. <code>rpg/bundle4-final-check-2026-10-24.md</code> 는 아직 없음.</p>
+<nav class="toc"><ol><li><a href="#summary">한 장 요약</a></li><li><a href="#structure">① 전체 구조</a></li><li><a href="#bosses">② 보스 전체 설계도</a></li><li><a href="#items">③ 아이템 스펙표</a></li><li><a href="#smithy">④ 대장간</a></li><li><a href="#crysta">⑤ 크리스타</a></li><li><a href="#materials">⑥ 재료 시스템</a></li><li><a href="#ops">⑦ 운영 메모</a></li><li><a href="#diffs">부록: 문서와 다른 곳</a></li></ol></nav>
+<section id="summary"><h2>한 장 요약 </h2>
+<div class="tiles">
+<div class="tile"><div class="k">레벨 사다리(장 상한)</div><div class="v">30 · 50 · 70 · 100 · 120 · 140</div><div class="d">만렙 140 · 장 6개</div></div>
+<div class="tile"><div class="k">보스 행(bosses.json)</div><div class="v">65</div><div class="d">라이브 55 + 묶음 4 10(Lv140 3인)</div></div>
+<div class="tile"><div class="k">모험 장비(카탈로그)</div><div class="v">1,093</div><div class="d">라이브 1,003 + 묶음 4 90</div></div>
+<div class="tile"><div class="k">직업 고유 장비</div><div class="v">36</div><div class="d">unique.json(무기·반지·직업 방어구)</div></div>
+<div class="tile"><div class="k">마이스터 레시피</div><div class="v">13</div><div class="d">모양 47 · 묶음 4</div></div>
+<div class="tile"><div class="k">크리스타(보스 보석)</div><div class="v">63</div><div class="d">순도 1~10 · 그중 묶음 4 10</div></div>
+<div class="tile"><div class="k">권장 방어력(파티 보스)</div><div class="v">640/990/1420/1800</div><div class="d">노멀/하드/카오스/익스트림</div></div>
+<div class="tile"><div class="k">정련</div><div class="v">+15</div><div class="d">실패 −1 · 파괴 없음</div></div>
+</div>
+<h3>다음 재시작(묶음 4)에 바뀌는 것 <span class="b b-b4">묶음 4</span></h3>
+<ul><li>새 보스 10종(모드 8개 추가: Legendary Monsters·Ice and Fire CE·Remnants·Aquamirae + 의존 4) — 전부 <b>Lv140 3인 파티</b>(탱커·힐러·극딜러), 사다리 [140,160,180,200], 마을 결전장 석판.</li><li><b>보스 레벨 제한 전체 폐지</b>: boss.toml <code>levelGate = false</code>(라이브 = 권장 −20까지만 석판 선택·피해). 혼테일 입구 Lv80 검사도 삭제.</li><li>석판·안내판·의뢰 창 = <b>권장 방어력 숫자만</b>(<code>defenseOnly = "all"</code>, 모든 보스) + 능력치 창 방어력 줄.</li><li>파티 전투 규칙: 방패 든 사람이 어그로 고정 · 받는 피해 단발/1초 상한 · 비대상 광역 ×0.5 · 보스 회복 ÷div · 힐러 전리품 자격 · 보스 XP 자기 레벨 상한.</li><li>장비 100/120/140 차별화: 세대 2 아이템(새 보스 키트 90종)에 대역 배율(옵션 ×1.15/×1.30 · 바탕 ×1.08/×1.15).</li><li>장인 T5 「마이스터」 제작(레시피 13 · 모양 47 · 실패 없음) · 장인 숙련 상한 120 → 140 · 마이스터 결과 Lv = clamp(min(숙련, Lv), 120, 140).</li><li>크리스타 6~10강(빛나는끼리 같은 이름 2개 → 다음 순도, 초월의 = 빛나는 32개) · 보스 드랍 ◆ Java 쪽 · 마을 인스턴스마다 보스 문 Java 쪽.</li><li>매각: 추가·특수 장비 ◆1~4(25,000~100,000) 매각·분해 창 안내·크리스타 박힌 장비 거부 문구(모드 장신구 57종 가격은 이미 /sell reload 로 라이브).</li></ul>
+<p>결정 대기: Lv140 대역 옵션 예산이 Lv100 대비 약 +53%(step×optMult). +30% 로 맞추려면 140 <code>optMult ≈ 1.105</code>. 값 없는 모드 무기·방어구(Cataclysm 19·BiC 30·Just Hammers 19) 분해 0 유지 여부.</p>
+</section>
+<section id="structure"><h2>① 전체 구조 </h2>
+<p>토람 온라인 골자 × 메이플 스킨. 레벨은 장(章) 상한으로 열리고, 장 보스를 서버에서 처음 잡으면 다음 장이 열린다. 장비는 「정련 · 부여(장인) · 크리스타」 3축으로 키운다.</p>
+<div class="tw"><table id="t-chapter" class="" data-rows="6">
+<thead><tr><th>장</th><th>레벨 구간</th><th>다음 장을 여는 보스(서버 첫 처치)</th></tr></thead><tbody>
+<tr><td>1장</td><td><span class="n">1~30</span></td><td>머쉬맘</td></tr>
+<tr><td>2장</td><td><span class="n">31~50</span></td><td>발록</td></tr>
+<tr><td>3장</td><td><span class="n">51~70</span></td><td>Lv70 이상 보스</td></tr>
+<tr><td>4장</td><td><span class="n">71~100</span></td><td>혼테일</td></tr>
+<tr><td>5장</td><td><span class="n">101~120</span></td><td>카오스 보스</td></tr>
+<tr><td>6장</td><td><span class="n">121~140</span></td><td>— (마지막 장)</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/xp.toml [chapter] caps·bossNames</p>
+<h3>직업과 무기 </h3>
+<div class="tw"><table id="t-class" class="" data-rows="4">
+<thead><tr><th>rpg.class</th><th>직업 축(모험 방어구 주 옵션)</th><th>부위당 % (재질 T1~T4)</th></tr></thead><tbody>
+<tr><td>1</td><td>전사 공격력</td><td>0.04, 0.05, 0.05, 0.05</td></tr>
+<tr><td>2</td><td>마법사 주문력</td><td>0.2, 0.25, 0.3, 0.3</td></tr>
+<tr><td>3</td><td>궁수 원거리</td><td>0.05, 0.08, 0.09, 0.09</td></tr>
+<tr><td>4</td><td>도적 공격력</td><td>0.04, 0.05, 0.05, 0.05</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json classAxis</p>
+<p>무기 9분류: 검 · 둔기 · 폴암 · 단검 · 낫 · 활 · 석궁 · 마법 · 치유 (class_weapons.json — 재질 철 → 다이아 → 네더라이트). 초보자(0)는 직업 축 없음.</p>
+<h3>순환 흐름 </h3>
+<div class="flow"><div><b>사냥터(8마을 지역)</b>잡몹 → 메이플 잡템 · 지역 장비(일반~영웅) · 정예 → 원석</div><div class="ar">→</div><div><b>보스(석판 4단계)</b>크리스타 · ◆ 장비 · 카탈로그 키트(영웅~신화) · 원석 · 보스 재료 · 정수 · 증표</div><div class="ar">→</div><div><b>대장간</b>정련(+15) · 단조 T1~T4·명장 · 부여·과부여 · 마이스터 T5 · 크리스타 · 전승 · 분해 · 매각</div><div class="ar">→</div><div><b>더 높은 보스</b>권장 방어력·권장 스펙 도달 → 다음 난이도·다음 장</div></div>
+<p>남는 장비·잡동사니는 분해 → 재료 포인트(6계열)로 다시 대장간에 들어가고, 미감정 장비·잡템은 매각 상인 → 메소로 돌아온다.</p>
+</section>
+<section id="bosses"><h2>② 보스 전체 설계도 </h2>
+<h3>난이도 체계 — 노멀·하드·카오스·익스트림 </h3>
+<div class="tw"><table id="t-diff" class="" data-rows="11">
+<thead><tr><th>항목</th><th>노멀</th><th>하드</th><th>카오스</th><th>익스트림</th></tr></thead><tbody>
+<tr><td>권장 Lv(표준 사다리)</td><td>+0</td><td>+10</td><td>+20</td><td>+40</td></tr>
+<tr><td>체력 배율(솔로 행)</td><td>1.25</td><td>1.875</td><td>2.5</td><td>5</td></tr>
+<tr><td>공격 배율(솔로 행)</td><td>1</td><td>1.5</td><td>2</td><td>4</td></tr>
+<tr><td>체력 배율(3인 파티 행) <span class="b b-b4">묶음 4</span></td><td>1.25</td><td>1.75</td><td>2.25</td><td>3.25</td></tr>
+<tr><td>공격 계단(3인 파티 행, × 행 atkMult) <span class="b b-b4">묶음 4</span></td><td>1</td><td>1.49</td><td>2.14</td><td>2.71</td></tr>
+<tr><td>보스 재료 개수 배율</td><td>×1</td><td>×2</td><td>×3</td><td>×5</td></tr>
+<tr><td>크리스타 드롭(확률 · 순도)</td><td>35% · 갈라진</td><td>50% · 다듬은</td><td>65% · 흠없는</td><td>100% · 완벽한 (권장 100 미만 흠없는)</td></tr>
+<tr><td>희귀 드롭(빛나는 크리스타·정수, 각각)</td><td>0.1%</td><td>0.8%</td><td>2%</td><td>5%</td></tr>
+<tr><td>설계 처치 시간(솔로, 초)</td><td>150</td><td>180</td><td>210</td><td>350</td></tr>
+<tr><td>권장 인원(솔로 행 안내)</td><td>1</td><td>1</td><td>2</td><td>3</td></tr>
+<tr><td>◆ 장비(보스 키트·◆ 표)</td><td>◆1</td><td>◆2</td><td>◆3</td><td>◆3 (권장 100+ ◆4)</td></tr>
+</tbody></table></div>
+<p class="src">출처: boss.toml [scale]·[party]·[loot] · spec.toml [spec] · maple/data/boss_gems.json drops·rare · gear_catalog.json rules.bossGrade</p>
+<p><span class="b b-diff">문서와 다름</span> README 보스 루프 절의 배율(체력 1.25/1.625/2.0/3.0 · 공격 ×1/1.2/1.45/1.9)은 옛 값이다. 서버 파일은 위 표(체력 1.25 → 5.0, 공격 1 → 4). <span class="b b-diff">문서와 다름</span> 엔드 보스 설계(§2-1)도 「기존 비율 그대로」라며 옛 비율 ×1.3/1.6/2.4 를 적었다. 미니 보스 4종은 단계별 기본 체력(spec.toml baseHp)이라 배율이 따로 논다.</p>
+<p>체력이 바닐라 상한 1024 를 넘는 몫은 받는 피해를 나눠(<code>sg_div</code>) 처리. 파티 가중: 100칸 안 사람마다 1.0(최소 0.4, 지금 레벨 부족 감점 0) — 파티 행은 Σw = max(인원 가중, 3).</p>
+<h3>장소와 입장 방법 </h3>
+<div class="tw"><table id="t-places" class="" data-rows="7">
+<thead><tr><th>장소</th><th>보스 수</th><th>입장</th></tr></thead><tbody>
+<tr><td>미니 석판</td><td>4</td><td>보스방 입구 석판 → 4단계·연습(미니는 다음 부활부터 적용)</td></tr>
+<tr><td>차원의 문(MS2)</td><td>5</td><td>마을 성문 밖 차원의 문 → 하늘 무대 입구 석판(4단계·연습)</td></tr>
+<tr><td>마을 보스 문</td><td>28 (묶음 4 10)</td><td>7마을(헤네시스 제외) 붉은 보스 문 → 마을별 하늘 결전장 발판 석판(4단계·연습·쿨 2분), 한 결전장 한 싸움</td></tr>
+<tr><td>원정대 투기장</td><td>8</td><td>스폰 북쪽 400칸 투기장, 제단 우클릭(4단계·연습)</td></tr>
+<tr><td>직접 소환</td><td>1</td><td>위더를 직접 만들면 노멀</td></tr>
+<tr><td>혼테일의 문</td><td>1</td><td>리프레 용의 둥지 끝 석판(4단계, 연습 없음) → 엔드</td></tr>
+<tr><td>필드 네임드</td><td>18</td><td>필드·구조물에서 만나면 노멀 보상(제단 없음, 기록판 제외)</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/town_bosses.json · tools/build_arena.py _ALTARS · tools/ms2/stages/stages.json · tools/maple_town/*(boss_tier·elnath_zakum·leafre_horntail)</p>
+<div class="tw"><table id="t-towns" class="" data-rows="7">
+<thead><tr><th>마을</th><th>결전장 석판 보스</th><th>결전장(투기장 원점 기준 x, z)</th></tr></thead><tbody>
+<tr><td>엘리니아</td><td>데미안 · 피닉스 · 에피네아 <span class="b b-b4">묶음 4</span> · 릴리노흐 <span class="b b-b4">묶음 4</span></td><td>-160, -240</td></tr>
+<tr><td>페리온</td><td>타나토스 · 반 레온 · 키메라 <span class="b b-b4">묶음 4</span></td><td>-160, -80</td></tr>
+<tr><td>커닝시티</td><td>킹 슬라임 · 프랑켄로이드</td><td>-160, 80</td></tr>
+<tr><td>리스항구</td><td>데우 · 킹 스네이크 · 스텀피 · 블러디퀸 <span class="b b-b4">묶음 4</span> · 그릴레 <span class="b b-b4">묶음 4</span></td><td>-160, 240</td></tr>
+<tr><td>슬리피우드</td><td>다일 · 듄켈 · 게이트키퍼 · 힐라 <span class="b b-b4">묶음 4</span> · 베네나 <span class="b b-b4">묶음 4</span></td><td>-340, -160</td></tr>
+<tr><td>엘나스</td><td>눈사람 · 카웅 · 반반 · 엘리자 <span class="b b-b4">묶음 4</span> · 도도 <span class="b b-b4">묶음 4</span></td><td>-340, 0</td></tr>
+<tr><td>리프레</td><td>벨룸 · 아카이럼 · 그리프 · 오르카 <span class="b b-b4">묶음 4</span></td><td>-340, 160</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/town_bosses.json</p>
+<p>마을 인스턴스(같은 마을이 여러 번 생성)마다 보스 문이 선다 — 데이터팩 몫은 라이브, 결전장·무덤 귀환 Java 는 <span class="b b-b4">묶음 4</span>. 결전장은 마을당 하나를 같이 쓴다.</p>
+<h3 id="boss-table">보스 65행 전체 </h3>
+<div class="tw"><table id="t-bosses" class="wide" data-rows="65">
+<thead><tr><th>상태</th><th>키</th><th>이름</th><th>출처</th><th>분류</th><th>장소</th><th>노멀</th><th>하드</th><th>카오스</th><th>익스</th><th>체력 배율(hpMult)</th><th>공격 배율(atkMult)</th><th>기준 인원</th><th>권장 방어력(노·하·카·익)</th><th>플래그</th><th>특징</th></tr></thead><tbody>
+<tr><td><span class="b b-live">라이브</span></td><td><code>skelcmd</code></td><td>해골 장교장</td><td>데이터팩 자체 보스(바닐라 몸 + 패턴)</td><td>미니 석판</td><td>페리온 유적 발굴지 안쪽 무덤 — 방 입구 석판</td><td><span class="n">25</span></td><td><span class="n">35</span></td><td><span class="n">45</span></td><td><span class="n">65</span></td><td>—</td><td>1</td><td>1</td><td>10/10/20/40</td><td>증표 2차 25%</td><td>메이플 미니 보스 — 고른 난이도는 다음 부활(10분)부터 · 2차 증표(공개 천장)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>mushmom</code></td><td>머쉬맘</td><td>데이터팩 자체 보스(바닐라 몸 + 패턴)</td><td>미니 석판</td><td>슬리피우드 개미굴 끝방(머쉬맘의 방) — 석판</td><td><span class="n">30</span></td><td><span class="n">40</span></td><td><span class="n">50</span></td><td><span class="n">70</span></td><td>—</td><td>1</td><td>1</td><td>10/20/20/40</td><td>증표 3차 25%</td><td>1장 보스 — 고른 난이도는 다음 부활(10분)부터 · 3차 증표(공개 천장)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>balrog</code></td><td>주니어 발록</td><td>데이터팩 자체 보스(바닐라 몸 + 패턴)</td><td>미니 석판</td><td>슬리피우드 저주받은 신전 본당 — 석판</td><td><span class="n">40</span></td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">80</span></td><td>—</td><td>1</td><td>1</td><td>10/20/30/50</td><td>증표 3차 25%</td><td>메이플 미니 보스 — 고른 난이도는 다음 부활(10분)부터 · 3차 증표(공개 천장)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>manon</code></td><td>마뇽</td><td>데이터팩 자체 보스(바닐라 몸 + 패턴)</td><td>미니 석판</td><td>리프레 4차 시험장 — 석판</td><td><span class="n">100</span></td><td><span class="n">110</span></td><td><span class="n">120</span></td><td><span class="n">140</span></td><td>—</td><td>1</td><td>1</td><td>30/40/50/180</td><td></td><td>4차 전직 시험 — 잠든 마뇽을 때리면 5초 뒤 시험장 안 인원으로 체력이 정해지고 시험장이 닫힘 · 제한 180초 · Lv100 이상 3차 전직자는 처음 한 번 4차 증표 확정 · 고른 난이도는 다음 시작(잠든 마뇽을 때릴 때)부터</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ms2_mano</code></td><td>마노</td><td>MS2 패턴 실행기(라바저 몸)</td><td>차원의 문(MS2)</td><td>헤네시스 차원의 문 → 하늘 무대「그리니아 폭포 공터」 석판</td><td><span class="n">30</span></td><td><span class="n">40</span></td><td><span class="n">50</span></td><td><span class="n">70</span></td><td>1</td><td>1</td><td>1</td><td>10/10/20/30</td><td>증표 2차 25% · XP ×1.6</td><td>1장 필드 정예 · 차원의 문 무대 · 싸움 약 2분(노멀 권장 Lv 기준) · 한 번 되살아나요 · 2차 증표(공개 천장)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ms2_lomoomoo</code></td><td>로로와 무무스</td><td>MS2 패턴 실행기(라바저 몸)</td><td>차원의 문(MS2)</td><td>페리온 차원의 문 → 하늘 무대「바움나무 고원」 석판</td><td><span class="n">34</span></td><td><span class="n">44</span></td><td><span class="n">54</span></td><td><span class="n">74</span></td><td>2.14</td><td>1</td><td>1</td><td>10/20/30/50</td><td>증표 2차 25% · 굴림 2 · XP ×2.4</td><td>1장 필드 보스 · 차원의 문 무대 · 싸움 약 3분(노멀 권장 Lv 기준)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ms2_devorak</code></td><td>데보라크</td><td>MS2 패턴 실행기(라바저 몸)</td><td>차원의 문(MS2)</td><td>커닝시티 차원의 문 → 하늘 무대「그림자 군단의 제단」 석판</td><td><span class="n">38</span></td><td><span class="n">48</span></td><td><span class="n">58</span></td><td><span class="n">78</span></td><td>2.93</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25% · 굴림 2 · XP ×3.2</td><td>2장 던전 보스 · 차원의 문 무대 · 싸움 약 4분(노멀 권장 Lv 기준)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ms2_balrog</code></td><td>발록</td><td>MS2 패턴 실행기(라바저 몸)</td><td>차원의 문(MS2)</td><td>슬리피우드 차원의 문 → 하늘 무대「불멸의 신전」 석판</td><td><span class="n">44</span></td><td><span class="n">54</span></td><td><span class="n">64</span></td><td><span class="n">84</span></td><td>4.01</td><td>1</td><td>1</td><td>20/30/40/110</td><td>증표 2차 30%·3차 10% · 굴림 2 · XP ×4</td><td>2장 보스 · 차원의 문 무대 · 싸움 약 5분(노멀 권장 Lv 기준)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ms2_papulatus</code></td><td>파풀라투스</td><td>MS2 패턴 실행기(라바저 몸)</td><td>차원의 문(MS2)</td><td>엘나스 차원의 문 → 하늘 무대「루디브리엄 시계탑 꼭대기」 석판</td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">120</span></td><td>4.86</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 3차 35%·4차 15% · 굴림 2 · XP ×4</td><td>차원의 문 무대 · 싸움 약 4분(노멀 권장 Lv 기준)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ferrous_wroughtnaut</code></td><td>반 레온</td><td>Mowzie&#x27;s Mobs</td><td>마을 보스 문</td><td>페리온 보스 문 → 페리온 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>40</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td>마법 피해 면역 · 고유 전리품은 직접 잡아야 떨어져요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>mutant_creeper</code></td><td>킹 슬라임</td><td>Mutant Monsters</td><td>마을 보스 문</td><td>커닝시티 보스 문 → 커닝시티 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>13.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td>폭발로 블록이 부서질 수 있어요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>mutant_enderman</code></td><td>데미안</td><td>Mutant Monsters</td><td>마을 보스 문</td><td>엘리니아 보스 문 → 엘리니아 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>8</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>mutant_skeleton</code></td><td>타나토스</td><td>Mutant Monsters</td><td>마을 보스 문</td><td>페리온 보스 문 → 페리온 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>10.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>mutant_zombie</code></td><td>프랑켄로이드</td><td>Mutant Monsters</td><td>마을 보스 문</td><td>커닝시티 보스 문 → 커닝시티 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>10.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>umvuthi</code></td><td>피닉스</td><td>Mowzie&#x27;s Mobs</td><td>마을 보스 문</td><td>엘리니아 보스 문 → 엘리니아 결전장 석판</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>10.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td>증표 2차 25%</td><td>고유 전리품은 직접 잡아야 떨어져요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ender_golem</code></td><td>듄켈</td><td>L_Ender&#x27;s Cataclysm</td><td>마을 보스 문</td><td>슬리피우드 보스 문 → 슬리피우드 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>15</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%·3차 20%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>infernal_dragon</code></td><td>벨룸</td><td>Block Factory&#x27;s Bosses</td><td>마을 보스 문</td><td>리프레 보스 문 → 리프레 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>9</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%·3차 20%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>kobolediator</code></td><td>다일</td><td>L_Ender&#x27;s Cataclysm</td><td>마을 보스 문</td><td>슬리피우드 보스 문 → 슬리피우드 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>12.5</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%·3차 20%</td><td>잠든 채로 나올 수 있어요 — 가까이 가면 깨어나요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>sandworm</code></td><td>데우</td><td>Block Factory&#x27;s Bosses</td><td>마을 보스 문</td><td>리스항구 보스 문 → 리스항구 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>11</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>underworld_knight</code></td><td>게이트키퍼</td><td>Block Factory&#x27;s Bosses</td><td>마을 보스 문</td><td>슬리피우드 보스 문 → 슬리피우드 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>8</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%·3차 20%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>wadjet</code></td><td>킹 스네이크</td><td>L_Ender&#x27;s Cataclysm</td><td>마을 보스 문</td><td>리스항구 보스 문 → 리스항구 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>15</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%·3차 20%</td><td>잠든 채로 나올 수 있어요 — 가까이 가면 깨어나요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>yeti</code></td><td>눈사람</td><td>Block Factory&#x27;s Bosses</td><td>마을 보스 문</td><td>엘나스 보스 문 → 엘나스 결전장 석판</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>9</td><td>1</td><td>1</td><td>20/30/30/70</td><td>증표 2차 25%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>frostmaw</code></td><td>그리프</td><td>Mowzie&#x27;s Mobs</td><td>마을 보스 문</td><td>리프레 보스 문 → 리프레 결전장 석판</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>12</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 2차 25%</td><td>고유 전리품은 쓰러지는 연출이 끝난 뒤, 직접 잡았을 때만 떨어져요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>gauntlet</code></td><td>반반</td><td>Bosses of Mass Destruction</td><td>마을 보스 문</td><td>엘나스 보스 문 → 엘나스 결전장 석판</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>12</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 3차 30%</td><td>고유 보상은 쓰러진 자리의 상자 · 싸우는 동안 블록이 생겨요 · 경험치 구슬을 떨어뜨려요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>lich</code></td><td>아카이럼</td><td>Bosses of Mass Destruction</td><td>마을 보스 문</td><td>리프레 보스 문 → 리프레 결전장 석판</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>10</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 3차 30%</td><td>살아 있는 동안 밤이 계속돼요 · 경험치 구슬을 떨어뜨려요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>obsidilith</code></td><td>카웅</td><td>Bosses of Mass Destruction</td><td>마을 보스 문</td><td>엘나스 보스 문 → 엘나스 결전장 석판</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>10</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 3차 30%</td><td>고유 보상은 쓰러진 자리의 상자 · 경험치 구슬을 떨어뜨려요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>void_blossom</code></td><td>스텀피</td><td>Bosses of Mass Destruction</td><td>마을 보스 문</td><td>리스항구 보스 문 → 리스항구 결전장 석판</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>8.5</td><td>1</td><td>1</td><td>20/30/40/80</td><td>증표 3차 30%</td><td>경험치 구슬을 떨어뜨려요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>aq_cornelia</code></td><td>블러디퀸</td><td>Aquamirae</td><td>마을 보스 문</td><td>리스항구 보스 문 → 리스항구 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>166</td><td>11.59</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 25% · 피해 사건 배율 · 모드 드롭 비움 · 깨움 NBT</td><td>화살 평타·삼지창·폭발 피해는 막아요 — 원거리 기술과 근접은 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>iaf_cyclops</code></td><td>오르카</td><td>Ice and Fire CE</td><td>마을 보스 문</td><td>리프레 보스 문 → 리프레 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>434</td><td>10.82</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 20%·4차 10% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>눈을 맞히면 한 번 큰 피해 + 앞을 잘 못 봐요 / 붙잡히면 크게 물려요 — 바짝 붙어 오래 있지 마요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_ancient_guardian</code></td><td>릴리노흐</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>엘리니아 보스 문 → 엘리니아 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>383</td><td>10.14</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 20%·4차 10% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>던진 물약은 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_colossus</code></td><td>에피네아</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>엘리니아 보스 문 → 엘리니아 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>405.5</td><td>10.82</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 20%·4차 10% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>던진 물약은 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_frost_golem</code></td><td>엘리자</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>엘나스 보스 문 → 엘나스 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>296</td><td>12.48</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 25% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>던진 물약·떨어지는 피해는 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_lava_eater</code></td><td>도도</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>엘나스 보스 문 → 엘나스 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>270</td><td>13.52</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 20%·4차 10% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>불붙이기·용암 피해는 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_skeletosaurus</code></td><td>그릴레</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>리스항구 보스 문 → 리스항구 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>344.5</td><td>11.59</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 20%·4차 10% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>불붙이기는 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>lm_withered</code></td><td>키메라</td><td>Legendary Monsters</td><td>마을 보스 문</td><td>페리온 보스 문 → 페리온 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>342.5</td><td>9.83</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 3차 25% · 피해 사건 배율 · 블록 파괴 차단 · 모드 드롭 비움</td><td>불붙이기·위더 피해는 안 들어가요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>rem_burial</code></td><td>힐라</td><td>Remnants</td><td>마을 보스 문</td><td>슬리피우드 보스 문 → 슬리피우드 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>437.5</td><td>11.59</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 4차 15% · 피해 사건 배율 · 모드 드롭 비움</td><td>체력 절반에서 봉인이 풀려 더 거세져요</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td><code>rem_warden</code></td><td>베네나</td><td>Remnants</td><td>마을 보스 문</td><td>슬리피우드 보스 문 → 슬리피우드 결전장 석판</td><td><span class="n">140</span></td><td><span class="n">160</span></td><td><span class="n">180</span></td><td><span class="n">200</span></td><td>103</td><td>9.01</td><td>3</td><td>640/990/1420/1800</td><td>3인 파티 · 증표 4차 15% · 피해 사건 배율 · 모드 드롭 비움 · 졸개 2</td><td>모습이 바뀌는 동안은 안 맞아요 / 내려찍기 직후가 틈 — 그때 맞히면 더 아파요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ender_guardian</code></td><td>시그너스</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">120</span></td><td>11.5</td><td>1</td><td>1</td><td>20/30/40/110</td><td>증표 3차 35%·4차 15%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>harbinger</code></td><td>알리샤르</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">120</span></td><td>10</td><td>1</td><td>1</td><td>20/30/40/110</td><td>증표 3차 35%·4차 15% · 깨움 NBT</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>scylla</code></td><td>레비아탄</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">120</span></td><td>10</td><td>1</td><td>1</td><td>20/30/40/110</td><td>증표 3차 35%·4차 15% · 깨움 NBT</td><td>마법 피해 면역</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>leviathan</code></td><td>피아누스</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 물 투기장(피아누스) 제단</td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">110</span></td><td><span class="n">130</span></td><td>12</td><td>1</td><td>1</td><td>20/40/50/140</td><td>물 필요 · 증표 3차 35%·4차 15%</td><td>물 투기장에서만 불러요(물 밖에선 무적) · 처치하면 깊은 바다의 몹들이 나타나기 시작해요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>maledictus</code></td><td>헤드리스 호스맨</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">110</span></td><td><span class="n">130</span></td><td>11.5</td><td>1</td><td>1</td><td>20/40/50/140</td><td>증표 3차 35%·4차 15%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ancient_remnant</code></td><td>크세르크세스</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">95</span></td><td><span class="n">105</span></td><td><span class="n">115</span></td><td><span class="n">135</span></td><td>11.5</td><td>1</td><td>1</td><td>20/40/50/160</td><td>증표 3차 35%·4차 15% · 깨움 NBT</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ignis</code></td><td>매그너스</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄)</td><td><span class="n">95</span></td><td><span class="n">105</span></td><td><span class="n">115</span></td><td><span class="n">135</span></td><td>11.5</td><td>1</td><td>1</td><td>20/40/50/160</td><td>증표 3차 35%·4차 15%</td><td>처치하면 불타는 광전사 몹들이 나타나기 시작해요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>monstrosity</code></td><td>자쿰</td><td>L_Ender&#x27;s Cataclysm</td><td>원정대 투기장</td><td>원정대 투기장 제단의 전당(맨 안쪽 줄) + 엘나스 자쿰 신전 석판</td><td><span class="n">100</span></td><td><span class="n">110</span></td><td><span class="n">120</span></td><td><span class="n">140</span></td><td>10</td><td>1</td><td>1</td><td>30/40/50/180</td><td>증표 3차 35%·4차 15%</td><td></td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>wither</code></td><td>크림슨 발록</td><td>바닐라</td><td>직접 소환</td><td>플레이어가 위더를 직접 만들어 부름(노멀 고정)</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>10</td><td>1</td><td>1</td><td>20/30/40/80</td><td></td><td>3장 보스 · 블록을 부숴요 · 증표 없음</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>dragon</code></td><td>혼테일</td><td>바닐라</td><td>혼테일의 문</td><td>리프레 용의 둥지 끝 「혼테일의 문」 석판 → 엔드(엔드 수정 재소환은 노멀)</td><td><span class="n">100</span></td><td><span class="n">110</span></td><td><span class="n">120</span></td><td><span class="n">140</span></td><td>30</td><td>1</td><td>1</td><td>30/40/50/180</td><td>증표 4차 10%</td><td>4장 보스 · 리프레 혼테일의 문 석판에서 난이도를 골라요(엔드 수정으로 부르면 노멀)</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>elder_guardian</code></td><td>포이즌 퍼퍼</td><td>바닐라</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>20</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>lifestealer</code></td><td>뱀파이어</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>16</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>missioner</code></td><td>이단 선교사</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>10.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>nightmare_stalker</code></td><td>나이트메어</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>23</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>sculptor</code></td><td>파우스트</td><td>Mowzie&#x27;s Mobs</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>11.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>sir_pumpkinhead</code></td><td>펌킨 나이트</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>10</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>supreme_bonescaller</code></td><td>해골 주술사</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>24.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>wildfire</code></td><td>플레임 골렘</td><td>Friends&amp;Foes</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">50</span></td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">90</span></td><td>13.5</td><td>1</td><td>1</td><td>20/20/30/60</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>aptrgangr</code></td><td>아이스 나이트</td><td>L_Ender&#x27;s Cataclysm</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>14</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>clawdian</code></td><td>킹 클랑</td><td>L_Ender&#x27;s Cataclysm</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>10</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>coralssus</code></td><td>코랄 골렘</td><td>L_Ender&#x27;s Cataclysm</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>14</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>ignited_revenant</code></td><td>화염 망령</td><td>L_Ender&#x27;s Cataclysm</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>28</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>krampus</code></td><td>이블 산타</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>9</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>lord_the_headless</code></td><td>듀라한</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>7.5</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>prowler</code></td><td>MT-09</td><td>L_Ender&#x27;s Cataclysm</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">60</span></td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">100</span></td><td>14</td><td>1</td><td>1</td><td>20/30/30/70</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>kraken</code></td><td>라타니카</td><td>Block Factory&#x27;s Bosses</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>6</td><td>1</td><td>1</td><td>20/30/40/80</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>lord_pumpkinhead</code></td><td>잭 오 랜턴</td><td>Born in Chaos</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">70</span></td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">110</span></td><td>4.5</td><td>1</td><td>1</td><td>20/30/40/80</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td><code>warden</code></td><td>타르가</td><td>바닐라</td><td>필드 네임드</td><td>필드·구조물 자연 등장(제단 없음, 노멀 고정)</td><td><span class="n">80</span></td><td><span class="n">90</span></td><td><span class="n">100</span></td><td><span class="n">120</span></td><td>7.5</td><td>1</td><td>1</td><td>20/30/40/110</td><td></td><td>필드 네임드 보스 · 제단 없음 — 만나면 노멀로 싸워요</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/bosses.json(65행) · maple/data/boss_names.json · maple/data/generated/boss_defense.json</p>
+<p>hpMult 는 모드 보스 기본 체력에 곱하는 행 배율(난이도 배율과 따로). 미니 보스는 단계별 기본 체력(spec.toml baseHp), MS2 는 attributes.max_health × hpMult. 「공격 배율」 1 = 행 배율 없음(난이도 배율만).</p>
+<h3>보상 규칙 </h3>
+<ul><li>참여자 전리품: 최대 체력의 5% 이상 피해를 준 사람마다 <code>rpg:boss/&lt;난이도&gt;</code> 표를 따로 굴림(인벤토리로). 모드 원래 드롭은 한 번(새 10종은 비움).</li><li>증표 공개 천장: 기본 확률 + 실패마다 +10%p, 100% 면 확정, 받으면 0. (25% → 늦어도 9번째)</li><li>첫 타격 잠금: 처음 때린 일행만 피해(32칸 안 친구는 합류, 5분 무타격이면 해제). 총·대포는 초당 40 상한.</li><li>보스 키트(카탈로그): 영웅(노멀+) 무기 2·방어구 2·보조 1 · 전설(하드+) 장신구·무기·방어구 각 1 · 신화(카오스+, 권장 60+) 1. 확률 영웅 3/3.5/4.5/6% · 전설 −/3/3.5/4.5% · 신화 −/−/3/3.5%(MS2 ×0.6 · 네임드 10% 노멀만).</li><li>힐러 전리품 자격 <span class="b b-b4">묶음 4</span>: 파티 행은 피해 5% 를 못 넘어도 잠금 목록·석판 일행이고 처치 순간 48칸 안 + 60초 넘게 곁에 있었으면 굴림.</li><li>보스 XP 자기 레벨 상한 <span class="b b-b4">묶음 4</span>: 보스 처치 XP ≤ 자기 레벨과 같은 보스를 잡았을 때의 XP(xp.toml bossXpOwnLevelCap). 전리품·재료는 그대로.</li></ul>
+<h3>레벨 제한 <span class="b b-b4">묶음 4</span></h3>
+<p>라이브: 석판 고르기·보스에게 주는 피해 = 파티 최고 Lv ≥ 권장 − 20(장 상한에 닿은 사람은 −10 더). 묶음 4: <code>levelGate = false</code> 로 <b>전체 폐지</b> — 권장 Lv 은 안내 숫자만. 되살리기 = <code>levelGate = true</code>.</p>
+<p><span class="b b-diff">문서와 다름</span> 혼테일 기록의 레벨 잠금은 묶음 4 에서 사라진다.</p>
+<h3>3인 파티 모델(새 10종) <span class="b b-b4">묶음 4</span></h3>
+<ul><li>기준 한 대 D = refHitScale 5.07 × (hitBase 4 + hitPerLv 0.2 × 140) = <b>162.2</b> × 공격 계단.</li><li>hpMult = (ttkNormal 180초 × 기준 딜러 1100/s × 가동률 u × (1 + 역할 몫 0.45)) ÷ (3 × 1.25 × 기본 체력). atkMult = D ÷ 모드 원래 한 대.</li><li>역할 몫: 탱커 0.2 · 힐러 0.1 · 극딜러 0.15. 예상 처치(기준 장비 3인) 180/252/324/468초.</li><li>받는 피해 단발 상한 = D × 1.25(내 방어로 깎은 뒤) · 20틱 합 ≤ ×1.6 · 비대상 ×0.5 · 어그로 = 방패 든 도전자(<code>aggro = "shield"</code>, 32칸).</li></ul>
+<div class="tw"><table id="t-party" class="" data-rows="10">
+<thead><tr><th>이름</th><th>키</th><th>모드</th><th>기본 체력</th><th>가동률 u</th><th>모드 한 대</th><th>hpMult</th><th>atkMult</th><th>3인 실효 체력 노멀</th><th>익스트림</th><th>마을</th></tr></thead><tbody>
+<tr><td>블러디퀸</td><td><code>aq_cornelia</code></td><td>Aquamirae</td><td>300</td><td>0.65</td><td>14</td><td>166</td><td>11.59</td><td>186,750</td><td>485,550</td><td>리스항구</td></tr>
+<tr><td>엘리자</td><td><code>lm_frost_golem</code></td><td>Legendary Monsters</td><td>220</td><td>0.85</td><td>13</td><td>296</td><td>12.48</td><td>244,200</td><td>634,920</td><td>엘나스</td></tr>
+<tr><td>키메라</td><td><code>lm_withered</code></td><td>Legendary Monsters</td><td>190</td><td>0.85</td><td>16.5</td><td>342.5</td><td>9.83</td><td>244,031</td><td>634,481</td><td>페리온</td></tr>
+<tr><td>도도</td><td><code>lm_lava_eater</code></td><td>Legendary Monsters</td><td>170</td><td>0.6</td><td>12</td><td>270</td><td>13.52</td><td>172,125</td><td>447,525</td><td>엘나스</td></tr>
+<tr><td>그릴레</td><td><code>lm_skeletosaurus</code></td><td>Legendary Monsters</td><td>200</td><td>0.9</td><td>14</td><td>344.5</td><td>11.59</td><td>258,375</td><td>671,775</td><td>리스항구</td></tr>
+<tr><td>에피네아</td><td><code>lm_colossus</code></td><td>Legendary Monsters</td><td>170</td><td>0.9</td><td>15</td><td>405.5</td><td>10.82</td><td>258,506</td><td>672,116</td><td>엘리니아</td></tr>
+<tr><td>릴리노흐</td><td><code>lm_ancient_guardian</code></td><td>Legendary Monsters</td><td>170</td><td>0.85</td><td>16</td><td>383</td><td>10.14</td><td>244,162</td><td>634,822</td><td>엘리니아</td></tr>
+<tr><td>오르카</td><td><code>iaf_cyclops</code></td><td>Ice and Fire CE</td><td>150</td><td>0.85</td><td>15</td><td>434</td><td>10.82</td><td>244,125</td><td>634,725</td><td>리프레</td></tr>
+<tr><td>힐라</td><td><code>rem_burial</code></td><td>Remnants</td><td>140</td><td>0.8</td><td>14</td><td>437.5</td><td>11.59</td><td>229,688</td><td>597,188</td><td>슬리피우드</td></tr>
+<tr><td>베네나</td><td><code>rem_warden</code></td><td>Remnants</td><td>520</td><td>0.7</td><td>18</td><td>103</td><td>9.01</td><td>200,850</td><td>522,210</td><td>슬리피우드</td></tr>
+</tbody></table></div>
+<p class="src">출처: bosses.json party 행 · maple/data/party_model.json · gear_catalog.json reach.modBossHp · boss.toml [party] — 생성기 tools/party_boss_stats.py</p>
+<h3>권장 방어력 식 <span class="b b-b4">묶음 4</span></h3>
+<p>방어력 지수 = 최대 체력 × stdHit(100) ÷ (원래 100 피해를 맞을 때 실제 받는 피해 — 방어·강도 → 받는 피해 감소 → 보호 마법부여). 권장 = 그 난이도 기준 한 대를 2대 버티는 지수(10 단위). 기준 탱커(체력 152·방어 30·강도 20·감소 28.5%·보호 IV×4) <b>1589.9</b> · T5 탱커 1840.9 · 딜러 143.2. 파티 보스 권장 640/990/1,420/1,800, 솔로 행은 전역 한 대 모델(예 혼테일 30/40/50/180).</p>
+<h3>2단계 엔드 9종(설계) <span class="b b-plan">예정</span></h3>
+<div class="tw"><table id="t-end9" class="" data-rows="9">
+<thead><tr><th>이름</th><th>키(예정)</th><th>모드</th><th>사다리(설계)</th><th>장소(설계)</th><th>기믹</th></tr></thead><tbody>
+<tr><td>루시드</td><td><code>lm_cloud_golem</code></td><td>Legendary Monsters</td><td>E110 [110,120,130,140]</td><td>정점 결전장 B</td><td>65% 분노, 번개·구름, 폭발·번개·불 면역</td></tr>
+<tr><td>윌</td><td><code>rem_watcher</code></td><td>Remnants</td><td>E110</td><td>정점 결전장 C</td><td>탄막·빔·렌즈 순간이동, 50% 방패(35° 틈)</td></tr>
+<tr><td>가디언 엔젤 슬라임</td><td><code>lm_paladin</code></td><td>Legendary Monsters</td><td>E120 [120,130,135,140]</td><td>정점 결전장 B</td><td>2페이즈, 흡혈, 패리 중 무적</td></tr>
+<tr><td>진 힐라</td><td><code>rem_sovereign</code></td><td>Remnants</td><td>E120</td><td>정점 결전장 C</td><td>66·33% 전환, 가드 = 원거리 무효</td></tr>
+<tr><td>더스크</td><td><code>rem_ossukage</code></td><td>Remnants</td><td>E130 [130,135,140,140]</td><td>정점 결전장 C</td><td>50% 변신, 쿠나이</td></tr>
+<tr><td>데셀</td><td><code>iaf_fire_dragon</code></td><td>Ice and Fire CE</td><td>E130</td><td>정점 결전장 A + 필드</td><td>비행·브레스(나이 100일 고정)</td></tr>
+<tr><td>핀스턴</td><td><code>iaf_ice_dragon</code></td><td>Ice and Fire CE</td><td>E130</td><td>정점 결전장 A + 필드</td><td>비행·브레스</td></tr>
+<tr><td>옐브</td><td><code>iaf_lightning_dragon</code></td><td>Ice and Fire CE</td><td>E130</td><td>정점 결전장 A + 필드</td><td>비행·브레스, 번개 면역</td></tr>
+<tr><td>스우</td><td><code>lm_obliterator</code></td><td>Legendary Monsters</td><td>E140 [140,140,140,140]</td><td>정점 결전장 B</td><td>3페이즈, 1페이즈 투사체 면역</td></tr>
+</tbody></table></div>
+<p class="src">출처: rpg/boss-expansion-design-2026-10-24.md §1-1·§1-4·§2 (설계 — 데이터 없음)</p>
+<p>엔드 규칙 틀은 묶음 4 jar 에 꺼 둔 채 실림(boss.toml <code>[end] enabled = false</code>: 쓰러짐 한도 [5,5,3,2] · 제한 시간 [20,25,35,45]분 · 하위 단계 처치 선행). 보상 설계: 굴림 2~3 · 신화 천장 · 첫 처치 확정 · 「정점의 인장」 1/2/4/8 · 정점 상인. <span class="b b-diff">문서와 다름</span> 엔드 사다리 E110~E140 은 새 10종이 이미 140 이라 다시 정해야 한다.</p>
+</section>
+<section id="items"><h2>③ 아이템 스펙표 </h2>
+<p>모험 장비 1,093종 전체 목록은 CSV: <a href="rpg-items-2026-10-24.csv">rpg-items-2026-10-24.csv</a> (UTF-8 BOM, 엑셀에서 바로 열림). 여기엔 규칙·집계·대표 예시만.</p>
+<h3>레벨 대역(bands)과 옵션 예산 </h3>
+<div class="tw"><table id="t-bands" class="" data-rows="11">
+<thead><tr><th>대역 Lv</th><th>바탕 재질</th><th>T4 계단 step</th><th>옵션 배율 optMult</th><th>바탕 배율 baseMult</th><th>L(Lv)</th><th>보스 ◆max</th><th>천장 C</th><th>일반</th><th>희귀</th><th>영웅</th><th>전설</th><th>신화</th></tr></thead><tbody>
+<tr><td>10</td><td>T1 철</td><td>1</td><td>1</td><td>1</td><td>0.5</td><td>◆1</td><td>0.7</td><td>0.14</td><td>0.28</td><td>0.42</td><td>0.56</td><td>0.66</td></tr>
+<tr><td>20</td><td>T1 철</td><td>1</td><td>1</td><td>1</td><td>0.5</td><td>◆1</td><td>0.7</td><td>0.14</td><td>0.28</td><td>0.42</td><td>0.56</td><td>0.66</td></tr>
+<tr><td>30</td><td>T2 다이아</td><td>1</td><td>1</td><td>1</td><td>0.533</td><td>◆2</td><td>0.93</td><td>0.19</td><td>0.37</td><td>0.56</td><td>0.75</td><td>0.89</td></tr>
+<tr><td>40</td><td>T2 다이아</td><td>1</td><td>1</td><td>1</td><td>0.6</td><td>◆3</td><td>1.8</td><td>0.36</td><td>0.72</td><td>1.08</td><td>1.44</td><td>1.71</td></tr>
+<tr><td>50</td><td>T2 다이아</td><td>1</td><td>1</td><td>1</td><td>0.667</td><td>◆3</td><td>1.93</td><td>0.39</td><td>0.77</td><td>1.16</td><td>1.55</td><td>1.84</td></tr>
+<tr><td>60</td><td>T3 네더라이트</td><td>1</td><td>1</td><td>1</td><td>0.733</td><td>◆3</td><td>2.07</td><td>0.41</td><td>0.83</td><td>1.24</td><td>1.65</td><td>1.96</td></tr>
+<tr><td>70</td><td>T3 네더라이트</td><td>1</td><td>1</td><td>1</td><td>0.8</td><td>◆3</td><td>2.2</td><td>0.44</td><td>0.88</td><td>1.32</td><td>1.76</td><td>2.09</td></tr>
+<tr><td>80</td><td>T3 네더라이트</td><td>1</td><td>1</td><td>1</td><td>0.867</td><td>◆3</td><td>2.33</td><td>0.47</td><td>0.93</td><td>1.4</td><td>1.87</td><td>2.22</td></tr>
+<tr><td>100</td><td>T4 보스</td><td>0.85</td><td>1</td><td>1</td><td>1</td><td>◆4</td><td>2.55</td><td>0.51</td><td>1.02</td><td>1.53</td><td>2.04</td><td>2.42</td></tr>
+<tr><td>120</td><td>T4 보스</td><td>0.92</td><td>1.15</td><td>1.08</td><td>1</td><td>◆4</td><td>2.76</td><td>0.63</td><td>1.27</td><td>1.9</td><td>2.54</td><td>3.02</td></tr>
+<tr><td>140</td><td>T4 보스</td><td>1</td><td>1.3</td><td>1.15</td><td>1</td><td>◆4</td><td>3</td><td>0.78</td><td>1.56</td><td>2.34</td><td>3.12</td><td>3.71</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json bands·rarities(share) · ◆max = rpg/gear-catalog-design §2 표 · 예산 = share × C × optMult(세대 2만)</p>
+<p>식: L(Lv) = clamp(0.5 + 0.5 × (Lv − 25) ÷ 75, 0.5, 1). ◆ 값 ◆1 L+0.2 · ◆2 L+0.4 · ◆3 2L+0.6 · ◆4 2L+1.0. 천장 C = 그 대역 보스 ◆max 값 × step. 예산 B = 희귀도 몫 × C (× optMult — 120·140 대역, 세대 2 아이템만 <span class="b b-b4">묶음 4</span>). 희귀 옵션 한 줄 값 = 끝값 × L × optMult × 희귀도 계수.</p>
+<p>옵션 예산 차이: 140 신화 예산 = 3.0 × 1.3 × 0.95 ≈ 3.71줄, 100 신화 = 2.55 × 0.95 ≈ 2.42줄 → <b>약 +53%</b>(결정 대기).</p>
+<h3>희귀도 </h3>
+<div class="tw"><table id="t-rarity" class="" data-rows="5">
+<thead><tr><th>희귀도</th><th>id</th><th>예산 몫</th><th>희귀 옵션 줄</th><th>희귀 값 계수</th><th>색</th><th>매각 배수</th><th>비고</th><th>아이템 수</th></tr></thead><tbody>
+<tr><td>일반</td><td><code>common</code></td><td>0.2</td><td>0~0</td><td>0.5</td><td>white</td><td>×1</td><td></td><td>84</td></tr>
+<tr><td>희귀</td><td><code>rare</code></td><td>0.4</td><td>1~1</td><td>0.6</td><td>aqua</td><td>×1.5</td><td></td><td>468</td></tr>
+<tr><td>영웅</td><td><code>epic</code></td><td>0.6</td><td>1~2</td><td>0.7</td><td>light_purple</td><td>×2</td><td></td><td>359</td></tr>
+<tr><td>전설</td><td><code>legend</code></td><td>0.8</td><td>2~2</td><td>0.85</td><td>gold</td><td>×3</td><td></td><td>140</td></tr>
+<tr><td>신화</td><td><code>mythic</code></td><td>0.95</td><td>2~3(3줄 35%)</td><td>1</td><td>green</td><td>×4</td><td>전투 희귀 1줄 보장</td><td>42</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json rarities · gear_catalog.json(서버) items</p>
+<h3>능력치 합 상한(같은 속성 — 카탈로그·1차·특성·세트 합) </h3>
+<div class="tw"><table id="t-caps" class="" data-rows="31">
+<thead><tr><th>능력치</th><th>id</th><th>구현</th><th>합 상한</th></tr></thead><tbody>
+<tr><td>최대 체력</td><td><code>hp</code></td><td>attr</td><td>12</td></tr>
+<tr><td>방어</td><td><code>armor</code></td><td>attr</td><td>6</td></tr>
+<tr><td>방어 강도</td><td><code>tough</code></td><td>attr</td><td>2</td></tr>
+<tr><td>넉백 저항</td><td><code>kb</code></td><td>attr</td><td>30%</td></tr>
+<tr><td>받는 피해 감소</td><td><code>resist</code></td><td>attr</td><td>6%</td></tr>
+<tr><td>이동 속도</td><td><code>move</code></td><td>attr</td><td>8%</td></tr>
+<tr><td>공격 속도</td><td><code>aspd</code></td><td>attr</td><td>8%</td></tr>
+<tr><td>치명</td><td><code>crit</code></td><td>attr</td><td>5%</td></tr>
+<tr><td>치명 피해</td><td><code>critdmg</code></td><td>attr</td><td>15%</td></tr>
+<tr><td>원거리 피해</td><td><code>ranged</code></td><td>attr</td><td>10%</td></tr>
+<tr><td>행운</td><td><code>luck</code></td><td>attr</td><td>6</td></tr>
+<tr><td>걸음 높이</td><td><code>step</code></td><td>attr</td><td>0.5</td></tr>
+<tr><td>점프</td><td><code>jump</code></td><td>attr</td><td>15%</td></tr>
+<tr><td>낙하 무시</td><td><code>safefall</code></td><td>attr</td><td>6칸</td></tr>
+<tr><td>물속 호흡</td><td><code>breath</code></td><td>attr</td><td>4</td></tr>
+<tr><td>채굴 속도</td><td><code>mine</code></td><td>attr</td><td>30%</td></tr>
+<tr><td>낙하 피해</td><td><code>fall</code></td><td>attr</td><td>-40%</td></tr>
+<tr><td>블록 사거리</td><td><code>reach</code></td><td>attr</td><td>1.5</td></tr>
+<tr><td>수중 이동</td><td><code>swim</code></td><td>attr</td><td>30%</td></tr>
+<tr><td>회피</td><td><code>dodge</code></td><td>attr</td><td>8%</td></tr>
+<tr><td>화염 피해</td><td><code>elem</code></td><td>attr</td><td>4</td></tr>
+<tr><td>주문 가속</td><td><code>cdr</code></td><td>attr</td><td>10</td></tr>
+<tr><td>메소 획득</td><td><code>meso</code></td><td>java</td><td>8%</td></tr>
+<tr><td>드랍률</td><td><code>drop</code></td><td>java</td><td>5%</td></tr>
+<tr><td>경험치</td><td><code>exp</code></td><td>java</td><td>6%</td></tr>
+<tr><td>화염 저항</td><td><code>fireres</code></td><td>java</td><td>30%</td></tr>
+<tr><td>흡혈</td><td><code>leech</code></td><td>node</td><td>3%</td></tr>
+<tr><td>반사</td><td><code>reflect</code></td><td>node</td><td>40%</td></tr>
+<tr><td>보스 피해</td><td><code>boss</code></td><td>node</td><td>30%</td></tr>
+<tr><td>공격력</td><td><code>atk</code></td><td>attr</td><td>6%</td></tr>
+<tr><td>주문력</td><td><code>spellp</code></td><td>attr</td><td>12%</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json stats(cap) — 세대 2 아이템은 capMult 로 늘림</p>
+<h3>부위별 주 옵션 · 희귀 옵션 후보 </h3>
+<div class="tw"><table id="t-parts" class="" data-rows="19">
+<thead><tr><th>부위</th><th>종류</th><th>칸</th><th>주 옵션 끝값(L=1, 신화)</th><th>희귀 옵션 후보</th></tr></thead><tbody>
+<tr><td>모자</td><td>armor</td><td>head</td><td>최대 체력 +2 · 방어 +1 · 넉백 저항 +10%</td><td>주문 가속, 물속 호흡, 채굴 속도, 반사</td></tr>
+<tr><td>상의</td><td>armor</td><td>chest</td><td>최대 체력 +3 · 방어 +1.5 · 받는 피해 감소 +3%</td><td>반사, 화염 저항, 흡혈</td></tr>
+<tr><td>하의</td><td>armor</td><td>legs</td><td>최대 체력 +2 · 방어 강도 +1</td><td>회피, 낙하 무시, 점프</td></tr>
+<tr><td>신발</td><td>armor</td><td>feet</td><td>방어 +1 · 이동 속도 +4%</td><td>점프, 낙하 무시, 회피</td></tr>
+<tr><td>장갑</td><td>acc</td><td>glove</td><td>공격 속도 +4% · 치명 +2%</td><td>채굴 속도, 흡혈, 치명 피해, 화염 피해</td></tr>
+<tr><td>망토</td><td>acc</td><td>cape</td><td>방어 +2 · 넉백 저항 +10%</td><td>낙하 무시, 회피, 반사, 화염 저항</td></tr>
+<tr><td>얼굴장식</td><td>face</td><td>face</td><td>최대 체력 +2 · 방어 +1</td><td>물속 호흡, 낙하 무시, 채굴 속도</td></tr>
+<tr><td>눈장식</td><td>acc</td><td>eye</td><td>치명 +2% · 원거리 피해 +3%</td><td>드랍률, 치명 피해</td></tr>
+<tr><td>귀고리</td><td>earring</td><td>earring</td><td>치명 +3% · 치명 피해 +8%</td><td>행운, 화염 피해, 주문 가속</td></tr>
+<tr><td>반지</td><td>acc</td><td>ring</td><td>최대 체력 +1 · 치명 +1%</td><td>메소 획득, 드랍률, 보스 피해, 흡혈</td></tr>
+<tr><td>펜던트</td><td>acc</td><td>pendant</td><td>최대 체력 +2</td><td>경험치, 메소 획득, 보스 피해, 주문 가속</td></tr>
+<tr><td>벨트</td><td>acc</td><td>belt</td><td>최대 체력 +2 · 방어 강도 +1</td><td>채굴 속도, 메소 획득, 점프</td></tr>
+<tr><td>견장</td><td>acc</td><td>shoulder</td><td>방어 +1 · 넉백 저항 +6%</td><td>반사, 주문 가속, 보스 피해, 경험치</td></tr>
+<tr><td>포켓</td><td>acc</td><td>pocket</td><td>행운 +4</td><td>메소 획득, 드랍률, 경험치, 물속 호흡</td></tr>
+<tr><td>무기</td><td>weapon</td><td>mainhand</td><td>무기 피해 +8% · 치명 +4%</td><td>치명 피해, 보스 피해, 흡혈, 화염 피해, 공격 속도</td></tr>
+<tr><td>실드</td><td>acc</td><td>secondary</td><td>공격력 +3% · 방어 +1</td><td>치명 피해, 반사, 화염 저항</td></tr>
+<tr><td>블레이드</td><td>acc</td><td>secondary</td><td>공격력 +3% · 치명 +2%</td><td>치명 피해, 회피, 흡혈</td></tr>
+<tr><td>화살깃</td><td>acc</td><td>secondary</td><td>원거리 피해 +3% · 치명 +2%</td><td>치명 피해, 화염 피해, 회피</td></tr>
+<tr><td>마도서</td><td>acc</td><td>secondary</td><td>주문력 +6% · 최대 체력 +2</td><td>주문 가속, 화염 피해, 치명 피해</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json parts</p>
+<div class="tw"><table id="t-options" class="" data-rows="19">
+<thead><tr><th>희귀 옵션</th><th>id</th><th>끝값</th><th>최소 희귀도</th><th>전투 무게 w</th><th>구분</th></tr></thead><tbody>
+<tr><td>이동 속도</td><td><code>move</code></td><td>4%</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>점프</td><td><code>jump</code></td><td>6%</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>낙하 무시</td><td><code>safefall</code></td><td>2칸</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>메소 획득</td><td><code>meso</code></td><td>3%</td><td>영웅부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>드랍률</td><td><code>drop</code></td><td>2%</td><td>영웅부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>경험치</td><td><code>exp</code></td><td>3%</td><td>전설부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>흡혈</td><td><code>leech</code></td><td>2%</td><td>전설부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>반사</td><td><code>reflect</code></td><td>20%</td><td>영웅부터</td><td>0.5</td><td>전투형(예산 안)</td></tr>
+<tr><td>화염 피해</td><td><code>elem</code></td><td>2</td><td>희귀부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>주문 가속</td><td><code>cdr</code></td><td>4</td><td>전설부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>보스 피해</td><td><code>boss</code></td><td>6%</td><td>전설부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>치명 피해</td><td><code>critdmg</code></td><td>10%</td><td>희귀부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>치명 피해</td><td><code>wcritdmg</code></td><td>10%</td><td>희귀부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>공격 속도</td><td><code>aspd</code></td><td>4%</td><td>희귀부터</td><td>1</td><td>전투형(예산 안)</td></tr>
+<tr><td>회피</td><td><code>dodge</code></td><td>3%</td><td>영웅부터</td><td>0.7</td><td>전투형(예산 안)</td></tr>
+<tr><td>채굴 속도</td><td><code>mine</code></td><td>15%</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>행운</td><td><code>luck</code></td><td>2</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>물속 호흡</td><td><code>breath</code></td><td>2</td><td>희귀부터</td><td>0</td><td>생활형(예산 밖)</td></tr>
+<tr><td>화염 저항</td><td><code>fireres</code></td><td>10%</td><td>영웅부터</td><td>0.5</td><td>전투형(예산 안)</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json options</p>
+<h3>키트 구조 </h3>
+<div class="tw"><table id="t-kits" class="" data-rows="17">
+<thead><tr><th>출처</th><th>키트</th><th>방식</th><th>개수</th><th>부위 풀</th><th>희귀도</th><th>난이도</th><th>단계</th></tr></thead><tbody>
+<tr><td>지역</td><td><code>rset</code></td><td>set4</td><td>4</td><td>모자, 상의, 하의, 신발</td><td>일반</td><td>—</td><td>2a</td></tr>
+<tr><td>지역</td><td><code>rwpn</code></td><td>weapon</td><td>9</td><td></td><td>희귀</td><td>—</td><td>2b</td></tr>
+<tr><td>지역</td><td><code>rgc</code></td><td>part</td><td>2</td><td>장갑, 망토</td><td>희귀</td><td>—</td><td>2b</td></tr>
+<tr><td>지역</td><td><code>rarm</code></td><td>part</td><td>4</td><td>모자, 상의, 하의, 신발</td><td>희귀</td><td>—</td><td>2b</td></tr>
+<tr><td>지역</td><td><code>racc</code></td><td>rotate</td><td>5</td><td>얼굴장식, 눈장식, 귀고리, 반지, 펜던트, 벨트, 견장, 포켓</td><td>희귀</td><td>—</td><td>2b</td></tr>
+<tr><td>지역</td><td><code>rsub</code></td><td>rotate</td><td>2</td><td>실드, 블레이드, 화살깃, 마도서</td><td>희귀</td><td>—</td><td>2b</td></tr>
+<tr><td>지역</td><td><code>repic</code></td><td>rotate</td><td>3</td><td>무기, 장갑, 귀고리, 상의, 무기, 망토, 펜던트, 모자, 무기, 반지, 하의, 신발</td><td>영웅</td><td>—</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>bwpn</code></td><td>weapon</td><td>2</td><td></td><td>영웅</td><td>노멀·하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>barm</code></td><td>rotate</td><td>2</td><td>모자, 상의, 하의, 신발</td><td>영웅</td><td>노멀·하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>bsub</code></td><td>rotate</td><td>1</td><td>실드, 블레이드, 화살깃, 마도서, 장갑, 망토</td><td>영웅</td><td>노멀·하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>lacc</code></td><td>rotate</td><td>1</td><td>귀고리, 펜던트, 반지, 벨트, 얼굴장식, 눈장식, 견장, 장갑, 망토, 포켓</td><td>전설</td><td>하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>lwpn</code></td><td>weapon</td><td>1</td><td></td><td>전설</td><td>하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>larm</code></td><td>rotate</td><td>1</td><td>상의, 모자, 신발, 하의</td><td>전설</td><td>하드·카오스·익스트림</td><td>2b</td></tr>
+<tr><td>보스</td><td><code>myth</code></td><td>rotate</td><td>1</td><td>무기, 모자, 상의, 펜던트, 무기, 하의, 신발, 귀고리</td><td>신화</td><td>카오스·익스트림</td><td>2b</td></tr>
+<tr><td>네임드</td><td><code>nacc</code></td><td>rotate</td><td>1</td><td>포켓, 견장</td><td>영웅</td><td>노멀</td><td>2b</td></tr>
+<tr><td>네임드</td><td><code>narm</code></td><td>rotate</td><td>1</td><td>모자, 상의, 하의, 신발</td><td>영웅</td><td>노멀</td><td>2b</td></tr>
+<tr><td>네임드</td><td><code>nwpn</code></td><td>weapon</td><td>1</td><td></td><td>영웅</td><td>노멀</td><td>2b</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/gear_catalog.json kits</p>
+<p>지역 세트(set4)는 3부위 덤(지역 setBonus) + 4부위 최대 체력. 1차 15종(pinned)은 고정 옵션 식(끝값 × L(요구 Lv) × 출처 계수 몹 0.8·정예 1.0·보스 1.1·상위판 1.25). 정예 몹 4종은 전용 장비 30% + 공용 15% + 원석 확정.</p>
+<h3>집계 — 대역 × 희귀도 </h3>
+<div class="tw"><table id="t-agg-band" class="" data-rows="13">
+<thead><tr><th>대역</th><th>일반</th><th>희귀</th><th>영웅</th><th>전설</th><th>신화</th><th>합</th><th>그중 묶음 4</th></tr></thead><tbody>
+<tr><td>10</td><td>20</td><td>111</td><td>15</td><td>0</td><td>0</td><td>146</td><td></td></tr>
+<tr><td>20</td><td>12</td><td>68</td><td>15</td><td>0</td><td>0</td><td>95</td><td></td></tr>
+<tr><td>25</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td></td></tr>
+<tr><td>30</td><td>12</td><td>67</td><td>30</td><td>2</td><td>0</td><td>111</td><td></td></tr>
+<tr><td>40</td><td>16</td><td>89</td><td>25</td><td>12</td><td>0</td><td>142</td><td></td></tr>
+<tr><td>50</td><td>8</td><td>45</td><td>61</td><td>6</td><td>0</td><td>120</td><td></td></tr>
+<tr><td>60</td><td>8</td><td>44</td><td>62</td><td>18</td><td>2</td><td>134</td><td></td></tr>
+<tr><td>70</td><td>4</td><td>22</td><td>39</td><td>21</td><td>6</td><td>92</td><td></td></tr>
+<tr><td>80</td><td>4</td><td>22</td><td>46</td><td>30</td><td>13</td><td>115</td><td></td></tr>
+<tr><td>100</td><td>0</td><td>0</td><td>15</td><td>21</td><td>8</td><td>44</td><td></td></tr>
+<tr><td>120</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>3</td><td></td></tr>
+<tr><td>140</td><td>0</td><td>0</td><td>50</td><td>30</td><td>10</td><td>90</td><td>90</td></tr>
+<tr><td>합</td><td>84</td><td>468</td><td>359</td><td>140</td><td>42</td><td>1093</td><td>90</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/gear_catalog.json items(band·rarity)</p>
+<div class="tw"><table id="t-agg-src" class="" data-rows="5">
+<thead><tr><th>종류</th><th>지역 몹</th><th>정예(1차 밖)</th><th>1차(몹·정예·보스·상위판)</th><th>보스</th><th>네임드</th><th>합</th></tr></thead><tbody>
+<tr><td>무기</td><td>205</td><td>0</td><td>4</td><td>151</td><td>18</td><td>378</td></tr>
+<tr><td>방어구</td><td>188</td><td>0</td><td>0</td><td>162</td><td>18</td><td>368</td></tr>
+<tr><td>장신구·장갑·망토·보조</td><td>183</td><td>0</td><td>0</td><td>86</td><td>18</td><td>287</td></tr>
+<tr><td>얼굴장식</td><td>14</td><td>0</td><td>5</td><td>5</td><td>0</td><td>24</td></tr>
+<tr><td>귀고리</td><td>19</td><td>0</td><td>6</td><td>11</td><td>0</td><td>36</td></tr>
+</tbody></table></div>
+<p class="src">출처: gear_catalog.json items(kind·source) — 1차 = pinned 13 + 상위판 2</p>
+<p>◆ 크리스타 칸을 받는 아이템(보스·네임드 무기·방어구): <b>349</b>종. 장신구·보조무기·지역 몹 장비는 ◆ 없음.</p>
+<h3>100 / 120 / 140 차별화 <span class="b b-b4">묶음 4</span></h3>
+<div class="tw"><table id="t-band-cmp" class="" data-rows="5">
+<thead><tr><th>비교</th><th>바탕</th><th>주 옵션</th><th>희귀 한 줄 예</th><th>옵션 합 비</th></tr></thead><tbody>
+<tr><td>신화 지팡이 100 → 140</td><td>×1.00 → ×1.15</td><td>피해 4.5 → 7% · 치명 2 → 3.5%</td><td>보스 피해 6 → 7.5%</td><td>×1.53</td></tr>
+<tr><td>신화 상의 100 → 140</td><td>×1.00 → ×1.15</td><td>방어 1.75 → 2.75</td><td>반사 20 → 26%</td><td>×1.45</td></tr>
+<tr><td>무기 총합(바탕 × 피해 × 보스)</td><td></td><td></td><td></td><td>약 ×1.19</td></tr>
+<tr><td>숙련 140 마이스터 vs 140 신화 한 벌(DPS)</td><td>최고(잠재력 127) ×3.24 · 보통 ×2.64</td><td></td><td>크리스타 10강 2칸 양쪽 ×3.30</td><td></td></tr>
+<tr><td>숙련 130 / 120 마이스터 vs 140 신화</td><td>×2.99 / ×2.76(보통 ×2.28)</td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<p class="src">출처: rpg/boss-lv140-impl-2026-10-24.md §4(문서 계산 — 데이터: bands optMult 1.15/1.3 · baseMult 1.08/1.15 · craft_recipes lvBands)</p>
+<p>세대(gen): 이미 가진 아이템(세대 1)은 수치 그대로, 세대 2(=새 보스 키트 90종)부터 대역 배율. 키트 90종 요구 Lv 140.</p>
+<h3>장비 등급 T0~T5 </h3>
+<div class="tw"><table id="t-tiers" class="" data-rows="6">
+<thead><tr><th>등급</th><th>이름</th><th>요구 Lv</th><th>정련 상한</th><th>무기 계수</th><th>검 합</th><th>활 한 발</th><th>방어 계수</th><th>방어 한 벌</th><th>강도 한 벌</th><th>부위당 강도/체력 덤</th><th>얻는 길</th></tr></thead><tbody>
+<tr><td>T0</td><td>기본</td><td>0</td><td>+5</td><td>1</td><td>5</td><td>4</td><td>1</td><td>7</td><td>0</td><td>+0 / +0</td><td>드랍·상점·단조</td></tr>
+<tr><td>T1</td><td>철</td><td>0</td><td>+5</td><td>1</td><td>6</td><td>6</td><td>1</td><td>15</td><td>0</td><td>+0 / +0</td><td>드랍·상점·단조</td></tr>
+<tr><td>T2</td><td>다이아</td><td>30</td><td>+10</td><td>1.333</td><td>9</td><td>13.33</td><td>1</td><td>20</td><td>8</td><td>+0 / +0</td><td>드랍·상점·단조</td></tr>
+<tr><td>T3</td><td>네더라이트</td><td>60</td><td>+12</td><td>1.571</td><td>12</td><td>18.86</td><td>1.2</td><td>24</td><td>12</td><td>+0 / +0</td><td>드랍·상점·단조</td></tr>
+<tr><td>T4</td><td>보스</td><td>100</td><td>+15</td><td>2</td><td>15</td><td>24</td><td>1.4</td><td>28</td><td>16</td><td>+1 / +1</td><td>보스 전리품</td></tr>
+<tr><td>T5</td><td>마이스터 <span class="b b-b4">묶음 4</span></td><td>120</td><td>+15</td><td>2.571</td><td>19</td><td>30.86</td><td>1.6</td><td>32</td><td>20</td><td>+2 / +2</td><td>장인 제작 전용</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/gear.toml [tiers]</p>
+<p>요구 Lv 미달이면 장착은 되지만 「쓸 수 있는 등급」 몫까지만(덤·상한 넘는 정련 빠짐). T5 미달(Lv120 전)이면 T4 몫 + 장인 옵션도 끔. gear.toml 의 T5 열은 <b>새 jar 와 반드시 같이</b>(옛 jar 는 T5 열을 보스 등급으로 읽어 소급).</p>
+<h3>도달 가능성(권장 스펙 ≤ 실제 최고 장비) </h3>
+<div class="tw"><table id="t-reach" class="" data-rows="92">
+<thead><tr><th>보스</th><th>난이도</th><th>권장 Lv</th><th>대역</th><th>실효 체력</th><th>목표 초</th><th>필요 검</th><th>필요 지팡이</th><th>필요 활</th><th>최고 검(상한 정련)</th><th>비(권장 정련)</th><th>비(상한 정련)</th><th>판정</th></tr></thead><tbody>
+<tr><td>해골 장교장</td><td>노멀</td><td>25</td><td>20</td><td>650</td><td>150</td><td>3.2</td><td>5.2</td><td>5.1</td><td>9.7</td><td>1.91</td><td>1.99</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>마노</td><td>노멀</td><td>30</td><td>30</td><td>1,770</td><td>120</td><td>10.9</td><td>17.7</td><td>17.5</td><td>16.3</td><td>1.12</td><td>1.3</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>머쉬맘</td><td>노멀</td><td>30</td><td>30</td><td>956</td><td>150</td><td>4.7</td><td>7.7</td><td>7.5</td><td>16.3</td><td>2.58</td><td>3</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>로로와 무무스</td><td>노멀</td><td>34</td><td>30</td><td>2,675</td><td>180</td><td>11</td><td>17.9</td><td>17.6</td><td>16.6</td><td>1.12</td><td>1.3</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>데보라크</td><td>노멀</td><td>38</td><td>30</td><td>3,662</td><td>240</td><td>11.3</td><td>18.3</td><td>18.1</td><td>17.1</td><td>1.11</td><td>1.29</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>해골 장교장</td><td>하드</td><td>35</td><td>30</td><td>1,378</td><td>180</td><td>5.7</td><td>9.2</td><td>9.1</td><td>16.8</td><td>2.2</td><td>2.55</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>주니어 발록</td><td>노멀</td><td>40</td><td>40</td><td>1,062</td><td>150</td><td>5.2</td><td>8.5</td><td>8.4</td><td>17.2</td><td>2.54</td><td>2.79</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>발록</td><td>노멀</td><td>44</td><td>40</td><td>5,012</td><td>300</td><td>12.4</td><td>20.1</td><td>19.8</td><td>17.5</td><td>1.09</td><td>1.19</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>마노</td><td>하드</td><td>40</td><td>40</td><td>2,655</td><td>144</td><td>13.6</td><td>22.2</td><td>21.8</td><td>17.2</td><td>0.98</td><td>1.07</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>머쉬맘</td><td>하드</td><td>40</td><td>40</td><td>1,472</td><td>180</td><td>6</td><td>9.8</td><td>9.7</td><td>17.2</td><td>2.2</td><td>2.42</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>로로와 무무스</td><td>하드</td><td>44</td><td>40</td><td>4,012</td><td>216</td><td>13.7</td><td>22.3</td><td>22</td><td>17.5</td><td>0.98</td><td>1.07</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>데보라크</td><td>하드</td><td>48</td><td>40</td><td>5,494</td><td>288</td><td>14.1</td><td>22.9</td><td>22.6</td><td>18</td><td>0.97</td><td>1.06</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>포이즌 퍼퍼</td><td>노멀</td><td>50</td><td>50</td><td>2,000</td><td>150</td><td>9.9</td><td>16</td><td>15.8</td><td>18.1</td><td>1.48</td><td>1.53</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>반 레온</td><td>노멀</td><td>50</td><td>50</td><td>2,000</td><td>150</td><td>9.9</td><td>16</td><td>15.8</td><td>18.1</td><td>1.48</td><td>1.53</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>뱀파이어</td><td>노멀</td><td>50</td><td>50</td><td>2,000</td><td>150</td><td>9.9</td><td>16</td><td>15.8</td><td>18.1</td><td>1.48</td><td>1.53</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>이단 선교사</td><td>노멀</td><td>50</td><td>50</td><td>1,969</td><td>150</td><td>9.7</td><td>15.8</td><td>15.5</td><td>18.1</td><td>1.5</td><td>1.55</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>킹 슬라임</td><td>노멀</td><td>50</td><td>50</td><td>2,025</td><td>150</td><td>10</td><td>16.2</td><td>16</td><td>18.1</td><td>1.46</td><td>1.51</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>데미안</td><td>노멀</td><td>50</td><td>50</td><td>2,000</td><td>150</td><td>9.9</td><td>16</td><td>15.8</td><td>18.1</td><td>1.48</td><td>1.53</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>타나토스</td><td>노멀</td><td>50</td><td>50</td><td>1,969</td><td>150</td><td>9.7</td><td>15.8</td><td>15.5</td><td>18.1</td><td>1.5</td><td>1.55</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>프랑켄로이드</td><td>노멀</td><td>50</td><td>50</td><td>1,969</td><td>150</td><td>9.7</td><td>15.8</td><td>15.5</td><td>18.1</td><td>1.5</td><td>1.55</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>나이트메어</td><td>노멀</td><td>50</td><td>50</td><td>2,012</td><td>150</td><td>9.9</td><td>16.1</td><td>15.9</td><td>18.1</td><td>1.47</td><td>1.52</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>파우스트</td><td>노멀</td><td>50</td><td>50</td><td>2,012</td><td>150</td><td>9.9</td><td>16.1</td><td>15.9</td><td>18.1</td><td>1.47</td><td>1.52</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>펌킨 나이트</td><td>노멀</td><td>50</td><td>50</td><td>2,000</td><td>150</td><td>9.9</td><td>16</td><td>15.8</td><td>18.1</td><td>1.48</td><td>1.53</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>해골 주술사</td><td>노멀</td><td>50</td><td>50</td><td>1,991</td><td>150</td><td>9.8</td><td>16</td><td>15.7</td><td>18.1</td><td>1.49</td><td>1.54</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>피닉스</td><td>노멀</td><td>50</td><td>50</td><td>1,969</td><td>150</td><td>9.7</td><td>15.8</td><td>15.5</td><td>18.1</td><td>1.5</td><td>1.55</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>플레임 골렘</td><td>노멀</td><td>50</td><td>50</td><td>2,025</td><td>150</td><td>10</td><td>16.2</td><td>16</td><td>18.1</td><td>1.46</td><td>1.51</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>주니어 발록</td><td>하드</td><td>50</td><td>50</td><td>1,622</td><td>180</td><td>6.7</td><td>10.8</td><td>10.7</td><td>18.1</td><td>2.19</td><td>2.26</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>발록</td><td>하드</td><td>54</td><td>50</td><td>7,519</td><td>360</td><td>15.4</td><td>25.1</td><td>24.7</td><td>18.4</td><td>0.95</td><td>0.99</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>아이스 나이트</td><td>노멀</td><td>60</td><td>60</td><td>2,800</td><td>150</td><td>13.8</td><td>22.4</td><td>22.1</td><td>25.1</td><td>1.62</td><td>1.72</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>킹 클랑</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>코랄 골렘</td><td>노멀</td><td>60</td><td>60</td><td>2,800</td><td>150</td><td>13.8</td><td>22.4</td><td>22.1</td><td>25.1</td><td>1.62</td><td>1.72</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>듄켈</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>화염 망령</td><td>노멀</td><td>60</td><td>60</td><td>2,800</td><td>150</td><td>13.8</td><td>22.4</td><td>22.1</td><td>25.1</td><td>1.62</td><td>1.72</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>벨룸</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>다일</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>이블 산타</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>듀라한</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>MT-09</td><td>노멀</td><td>60</td><td>60</td><td>2,800</td><td>150</td><td>13.8</td><td>22.4</td><td>22.1</td><td>25.1</td><td>1.62</td><td>1.72</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>데우</td><td>노멀</td><td>60</td><td>60</td><td>2,062</td><td>150</td><td>10.2</td><td>16.5</td><td>16.3</td><td>25.1</td><td>2.2</td><td>2.34</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>게이트키퍼</td><td>노멀</td><td>60</td><td>60</td><td>2,500</td><td>150</td><td>12.3</td><td>20</td><td>19.7</td><td>25.1</td><td>1.81</td><td>1.93</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>킹 스네이크</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>눈사람</td><td>노멀</td><td>60</td><td>60</td><td>2,812</td><td>150</td><td>13.9</td><td>22.5</td><td>22.2</td><td>25.1</td><td>1.61</td><td>1.71</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>반 레온</td><td>하드</td><td>60</td><td>60</td><td>3,000</td><td>180</td><td>12.3</td><td>20</td><td>19.7</td><td>25.1</td><td>1.81</td><td>1.93</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>킹 슬라임</td><td>하드</td><td>60</td><td>60</td><td>3,038</td><td>180</td><td>12.5</td><td>20.3</td><td>20</td><td>25.1</td><td>1.79</td><td>1.9</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>데미안</td><td>하드</td><td>60</td><td>60</td><td>3,000</td><td>180</td><td>12.3</td><td>20</td><td>19.7</td><td>25.1</td><td>1.81</td><td>1.93</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>타나토스</td><td>하드</td><td>60</td><td>60</td><td>2,953</td><td>180</td><td>12.1</td><td>19.7</td><td>19.4</td><td>25.1</td><td>1.84</td><td>1.96</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>프랑켄로이드</td><td>하드</td><td>60</td><td>60</td><td>2,953</td><td>180</td><td>12.1</td><td>19.7</td><td>19.4</td><td>25.1</td><td>1.84</td><td>1.96</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>피닉스</td><td>하드</td><td>60</td><td>60</td><td>2,953</td><td>180</td><td>12.1</td><td>19.7</td><td>19.4</td><td>25.1</td><td>1.84</td><td>1.96</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>그리프</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>반반</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>라타니카</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>아카이럼</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>잭 오 랜턴</td><td>노멀</td><td>70</td><td>70</td><td>3,746</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>카웅</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>스텀피</td><td>노멀</td><td>70</td><td>70</td><td>3,719</td><td>150</td><td>18.3</td><td>29.8</td><td>29.3</td><td>25.5</td><td>1.27</td><td>1.32</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>크림슨 발록</td><td>노멀</td><td>70</td><td>70</td><td>3,750</td><td>150</td><td>18.5</td><td>30</td><td>29.6</td><td>25.5</td><td>1.26</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>듄켈</td><td>하드</td><td>70</td><td>70</td><td>4,219</td><td>180</td><td>17.3</td><td>28.2</td><td>27.7</td><td>25.5</td><td>1.35</td><td>1.39</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>벨룸</td><td>하드</td><td>70</td><td>70</td><td>4,219</td><td>180</td><td>17.3</td><td>28.2</td><td>27.7</td><td>25.5</td><td>1.35</td><td>1.39</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>다일</td><td>하드</td><td>70</td><td>70</td><td>4,219</td><td>180</td><td>17.3</td><td>28.2</td><td>27.7</td><td>25.5</td><td>1.35</td><td>1.39</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>데우</td><td>하드</td><td>70</td><td>70</td><td>3,094</td><td>180</td><td>12.7</td><td>20.7</td><td>20.3</td><td>25.5</td><td>1.84</td><td>1.9</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>게이트키퍼</td><td>하드</td><td>70</td><td>70</td><td>3,750</td><td>180</td><td>15.4</td><td>25</td><td>24.7</td><td>25.5</td><td>1.51</td><td>1.57</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>킹 스네이크</td><td>하드</td><td>70</td><td>70</td><td>4,219</td><td>180</td><td>17.3</td><td>28.2</td><td>27.7</td><td>25.5</td><td>1.35</td><td>1.39</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>눈사람</td><td>하드</td><td>70</td><td>70</td><td>4,219</td><td>180</td><td>17.3</td><td>28.2</td><td>27.7</td><td>25.5</td><td>1.35</td><td>1.39</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>시그너스</td><td>노멀</td><td>80</td><td>80</td><td>4,787</td><td>180</td><td>19.7</td><td>32</td><td>31.5</td><td>25.8</td><td>1.19</td><td>1.24</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>알리샤르</td><td>노멀</td><td>80</td><td>80</td><td>4,875</td><td>180</td><td>20</td><td>32.6</td><td>32.1</td><td>25.8</td><td>1.17</td><td>1.22</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>파풀라투스</td><td>노멀</td><td>80</td><td>80</td><td>6,075</td><td>300</td><td>15</td><td>24.3</td><td>24</td><td>25.8</td><td>1.57</td><td>1.63</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>레비아탄</td><td>노멀</td><td>80</td><td>80</td><td>4,875</td><td>180</td><td>20</td><td>32.6</td><td>32.1</td><td>25.8</td><td>1.17</td><td>1.22</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>타르가</td><td>노멀</td><td>80</td><td>80</td><td>4,688</td><td>150</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>피아누스</td><td>노멀</td><td>90</td><td>80</td><td>6,000</td><td>180</td><td>24.7</td><td>40.1</td><td>39.4</td><td>26.1</td><td>0.99</td><td>0.99</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>헤드리스 호스맨</td><td>노멀</td><td>90</td><td>80</td><td>6,038</td><td>180</td><td>24.8</td><td>40.3</td><td>39.7</td><td>26.1</td><td>0.99</td><td>0.99</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>크세르크세스</td><td>노멀</td><td>95</td><td>80</td><td>6,469</td><td>190</td><td>25.2</td><td>40.9</td><td>40.3</td><td>26.2</td><td>0.98</td><td>0.98</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>매그너스</td><td>노멀</td><td>95</td><td>80</td><td>6,469</td><td>190</td><td>25.2</td><td>40.9</td><td>40.3</td><td>26.2</td><td>0.98</td><td>0.98</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>그리프</td><td>하드</td><td>80</td><td>80</td><td>5,625</td><td>180</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>반반</td><td>하드</td><td>80</td><td>80</td><td>5,625</td><td>180</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>아카이럼</td><td>하드</td><td>80</td><td>80</td><td>5,625</td><td>180</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>카웅</td><td>하드</td><td>80</td><td>80</td><td>5,625</td><td>180</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>스텀피</td><td>하드</td><td>80</td><td>80</td><td>5,578</td><td>180</td><td>22.9</td><td>37.2</td><td>36.7</td><td>25.8</td><td>1.03</td><td>1.06</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>크림슨 발록</td><td>하드</td><td>80</td><td>80</td><td>5,625</td><td>180</td><td>23.1</td><td>37.6</td><td>37</td><td>25.8</td><td>1.02</td><td>1.05</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>시그너스</td><td>하드</td><td>90</td><td>80</td><td>7,180</td><td>216</td><td>24.6</td><td>40</td><td>39.3</td><td>26.1</td><td>1</td><td>1</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>알리샤르</td><td>하드</td><td>90</td><td>80</td><td>7,312</td><td>216</td><td>25</td><td>40.7</td><td>40.1</td><td>26.1</td><td>0.98</td><td>0.98</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>파풀라투스</td><td>하드</td><td>90</td><td>80</td><td>9,112</td><td>360</td><td>18.7</td><td>30.4</td><td>30</td><td>26.1</td><td>1.31</td><td>1.31</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>레비아탄</td><td>하드</td><td>90</td><td>80</td><td>7,312</td><td>216</td><td>25</td><td>40.7</td><td>40.1</td><td>26.1</td><td>0.98</td><td>0.98</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>혼테일</td><td>노멀</td><td>100</td><td>100</td><td>7,500</td><td>205</td><td>27.1</td><td>44</td><td>43.3</td><td>34.7</td><td>1.09</td><td>1.19</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>마뇽</td><td>노멀</td><td>100</td><td>100</td><td>6,850</td><td>200</td><td>25.3</td><td>41.2</td><td>40.5</td><td>34.7</td><td>1.17</td><td>1.27</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>자쿰</td><td>노멀</td><td>100</td><td>100</td><td>7,500</td><td>220</td><td>25.2</td><td>41</td><td>40.3</td><td>34.7</td><td>1.17</td><td>1.28</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>피아누스</td><td>하드</td><td>100</td><td>100</td><td>9,000</td><td>216</td><td>30.8</td><td>50.1</td><td>49.3</td><td>34.7</td><td>0.96</td><td>1.05</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>헤드리스 호스맨</td><td>하드</td><td>100</td><td>100</td><td>9,056</td><td>216</td><td>31</td><td>50.4</td><td>49.6</td><td>34.7</td><td>0.95</td><td>1.04</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>크세르크세스</td><td>하드</td><td>105</td><td>100</td><td>9,703</td><td>228</td><td>31.5</td><td>51.2</td><td>50.4</td><td>34.8</td><td>0.95</td><td>1.03</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>매그너스</td><td>하드</td><td>105</td><td>100</td><td>9,703</td><td>228</td><td>31.5</td><td>51.2</td><td>50.4</td><td>34.8</td><td>0.95</td><td>1.03</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>혼테일</td><td>하드</td><td>110</td><td>100</td><td>11,250</td><td>246</td><td>33.8</td><td>55</td><td>54.1</td><td>35</td><td>0.91</td><td>0.97</td><td><span class="b b-b4">경계</span></td></tr>
+<tr><td>마뇽</td><td>하드</td><td>110</td><td>100</td><td>9,600</td><td>240</td><td>29.6</td><td>48.1</td><td>47.3</td><td>35</td><td>1.04</td><td>1.1</td><td><span class="b b-live">OK</span></td></tr>
+<tr><td>자쿰</td><td>하드</td><td>110</td><td>100</td><td>11,250</td><td>264</td><td>31.5</td><td>51.2</td><td>50.4</td><td>35</td><td>0.98</td><td>1.04</td><td><span class="b b-b4">경계</span></td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/generated/catalog_reach.json(92칸 · OK 75 · 경계 17) — 노멀·하드, 파티 행은 제외(솔로 모델 밖)</p>
+<p>비 = 최고 화면 공격력 ÷ 필요 공격력(네 무기 중 가장 낮은 것). 상한 정련 비 &lt; 0.95 = 미달(생성기 오류), 1 미만 = 경계. 미달이면 spec.toml ttkByKey 로 목표 시간을 늘림(보스 체력 그대로).</p>
+<h3>대표 예시 </h3>
+<div class="tw"><table id="t-examples" class="" data-rows="8">
+<thead><tr><th>id</th><th>이름</th><th>부위</th><th>대역</th><th>희귀도</th><th>티어</th><th>출처</th><th>주 옵션</th><th>희귀 옵션</th><th>크리스타 칸</th><th>세대</th><th>상태</th></tr></thead><tbody>
+<tr><td><code>c_b_skelcmd_blunt</code></td><td>해골 장교장의 메이스</td><td>무기(둔기)</td><td>20</td><td>영웅</td><td>T1 철</td><td>보스 · 해골 장교장</td><td>무기 피해 +0.5%</td><td>공격 속도 +1% · 치명 피해 +1%</td><td>노멀 1 · 하드 1 · 카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_skelcmd_hat</code></td><td>해골 장교장의 햇</td><td>모자</td><td>20</td><td>영웅</td><td>T1 철</td><td>보스 · 해골 장교장</td><td>넉백 저항 +1.5%</td><td>물속 호흡 +1 · 반사 +6%</td><td>노멀 1 · 하드 1 · 카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_ferrous_wroughtnaut_polearm</code></td><td>반 레온의 트라이던트</td><td>무기(폴암)</td><td>60</td><td>전설</td><td>T3 네더라이트</td><td>보스 · 반 레온</td><td>치명 +1.5% · 무기 피해 +3%</td><td>보스 피해 +3.5% · 치명 피해 +3%</td><td>하드 1 · 카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_balrog_top_2</code></td><td>주니어 발록의 아머</td><td>상의</td><td>60</td><td>신화</td><td>T3 네더라이트</td><td>보스 · 주니어 발록</td><td>최대 체력 +2 · 방어 +0.5</td><td>화염 저항 +7% · 반사 +14%</td><td>카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_harbinger_crossbow</code></td><td>알리샤르의 연사 보우건</td><td>무기(석궁)</td><td>100</td><td>신화</td><td>T4 보스</td><td>보스 · 알리샤르</td><td>치명 +2% · 무기 피해 +4.5%</td><td>흡혈 +2% · 화염 피해 +0.5</td><td>카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_ancient_remnant_bottom_2</code></td><td>크세르크세스의 팬츠</td><td>하의</td><td>100</td><td>신화</td><td>T4 보스</td><td>보스 · 크세르크세스</td><td>최대 체력 +1.75 · 방어 강도 +0.5</td><td>회피 +3% · 낙하 무시 +2칸</td><td>카오스 2 · 익스트림 2</td><td>1</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td><code>c_b_lm_colossus_crossbow</code></td><td>에피네아의 헤비 보우건</td><td>무기(석궁)</td><td>140</td><td>신화</td><td>T4 보스</td><td>보스 · 에피네아</td><td>치명 +7%</td><td>보스 피해 +7.5% · 공격 속도 +2.5%</td><td>카오스 2 · 익스트림 2</td><td>2</td><td><span class="b b-b4">묶음 4</span></td></tr>
+<tr><td><code>c_b_iaf_cyclops_shoes_2</code></td><td>오르카의 샌들</td><td>신발</td><td>140</td><td>신화</td><td>T4 보스</td><td>보스 · 오르카</td><td>방어 +1.75 · 이동 속도 +2.5%</td><td>회피 +3.5% · 점프 +7%</td><td>카오스 2 · 익스트림 2</td><td>2</td><td><span class="b b-b4">묶음 4</span></td></tr>
+</tbody></table></div>
+<p class="src">출처: gear_catalog.json + gear_catalog.lock.json(대역마다 가장 높은 희귀도 무기·방어구 첫 id)</p>
+<h3>그 밖의 장비 </h3>
+<ul><li>직업 고유 장비 36종(unique.json): Lv70·100 무기 12 · 특수 스킬 반지 4 · 펜던트 2 · 자쿰 얼굴장식 · 귀고리 · 직업 방어구 16(4직업 × 4부위, ◆1~4).</li><li>추가 장비(얼굴장식) ◆1~4: 낡은 얼굴장식, 단단한 얼굴장식, 카오스 얼굴장식, 익스트림 얼굴장식 — 방어 +1~4 · 체력 +1~4. 특수 장비(귀고리) ◆2~4: 단단한 귀고리, 카오스 귀고리, 익스트림 귀고리 — 치명 2~4% · 주문 치명 2~4 · 체력 2~4. 크리스타 칸 1.</li><li>◆ 보스 장비(boss_loot ◆ 표): 보스마다 ◆1~4 무기 50%(절반은 내 직업 무기)·방어구 50%, ◆ 값이 단조 잠재력 +2/+4/+6/+10.</li><li>보조손 무기: 정련·크리스타·고유·모험 장비 옵션 50%(gear.toml [offhand]).</li></ul>
+</section>
+<section id="smithy"><h2>④ 대장간 </h2>
+<h3>정련 +0 → +15 (토람식) </h3>
+<div class="tw"><table id="t-refine" class="" data-rows="15">
+<thead><tr><th>단계</th><th>성공률</th><th>원석</th><th>메소</th><th>도달 시 효과(자기 공격·방어·화살·주문력 %)</th></tr></thead><tbody>
+<tr><td>+0 → +1</td><td>95%</td><td>브론즈의 원석 ×1</td><td>1,000</td><td>1.2%</td></tr>
+<tr><td>+1 → +2</td><td>90%</td><td>브론즈의 원석 ×1</td><td>4,000</td><td>2.8%</td></tr>
+<tr><td>+2 → +3</td><td>85%</td><td>브론즈의 원석 ×1</td><td>9,000</td><td>4.8%</td></tr>
+<tr><td>+3 → +4</td><td>85%</td><td>브론즈의 원석 ×1</td><td>16,000</td><td>7.2%</td></tr>
+<tr><td>+4 → +5</td><td>80%</td><td>브론즈의 원석 ×1</td><td>25,000</td><td>10.0%</td></tr>
+<tr><td>+5 → +6</td><td>80%</td><td>미스릴의 원석 ×1</td><td>36,000</td><td>13.2%</td></tr>
+<tr><td>+6 → +7</td><td>75%</td><td>미스릴의 원석 ×1</td><td>49,000</td><td>16.8%</td></tr>
+<tr><td>+7 → +8</td><td>70%</td><td>미스릴의 원석 ×1</td><td>64,000</td><td>20.8%</td></tr>
+<tr><td>+8 → +9</td><td>65%</td><td>미스릴의 원석 ×1</td><td>81,000</td><td>25.2%</td></tr>
+<tr><td>+9 → +10</td><td>60%</td><td>미스릴의 원석 ×1</td><td>100,000</td><td>30.0%</td></tr>
+<tr><td>+10 → +11</td><td>55%</td><td>아다만티움의 원석 ×1</td><td>121,000</td><td>35.2%</td></tr>
+<tr><td>+11 → +12</td><td>50%</td><td>아다만티움의 원석 ×1</td><td>144,000</td><td>40.8%</td></tr>
+<tr><td>+12 → +13</td><td>45%</td><td>아다만티움의 원석 ×1</td><td>169,000</td><td>46.8%</td></tr>
+<tr><td>+13 → +14</td><td>40%</td><td>오리하르콘의 원석 ×1</td><td>196,000</td><td>53.2%</td></tr>
+<tr><td>+14 → +15</td><td>35%</td><td>오리하르콘의 원석 ×1</td><td>225,000</td><td>60.0%</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/refine.toml [refine]</p>
+<p>실패 = −1(+0 은 그대로) + 최대 내구도 10% 마모. <b>장비는 사라지지 않는다.</b> +15 성공은 전체 공지. 등급별 상한은 gear.toml refineCap(T0·T1 +5 · T2 +10 · T3 +12 · T4·T5 +15). 손재주(TEC)가 안정률(실패해도 유지)을 더함(기본 0).</p>
+<p><span class="b b-diff">문서와 다름</span> 정련은 「파괴 없음」이지 「실패 없음」이 아니다 — 실패 시 한 단계 내려간다. 「실패 없음」은 마이스터 제작 쪽 규칙.</p>
+<h3>단조 T1~T4 · 명장 · 마이스터 T5 </h3>
+<div class="tw"><table id="t-forge" class="" data-rows="6">
+<thead><tr><th>등급</th><th>해금</th><th>기본 잠재력</th><th>메소</th><th>재료 포인트</th><th>부여 단계당 메소 / 포인트</th><th>추가 재료</th><th>숙련 XP</th><th>상태</th></tr></thead><tbody>
+<tr><td>T1 철</td><td>숙련 0</td><td>20</td><td>5,000</td><td>300</td><td>2,000 / 30</td><td>—</td><td>40</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>T2 다이아</td><td>숙련 10</td><td>28</td><td>50,000</td><td>1,500</td><td>10,000 / 100</td><td>—</td><td>120</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>T3 네더라이트</td><td>숙련 20</td><td>36</td><td>200,000</td><td>4,000</td><td>40,000 / 250</td><td>—</td><td>300</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>T4 보스</td><td>숙련 30</td><td>44</td><td>400,000</td><td>6,000</td><td>80,000 / 400</td><td>보스 재료 1</td><td>500</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>명장(5등급 표식, 내부 T4)</td><td>Lv120 · 숙련 40</td><td>44+8</td><td>×2</td><td>6,000</td><td>T4 와 같음</td><td>보스 재료 2</td><td>500</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>마이스터 T5(레시피 제작)</td><td>Lv120 · 숙련 50</td><td>무기 80 · 방어구 72</td><td>무기 3,000,000 · 방어구 1,500,000</td><td>30,000 / 18,000</td><td>단계 덤 +2(방어 쪽 +1, 정수 +1)</td><td>보스 재료 2 / 1(노멀 권장 ≥ 80)</td><td>800 / 600</td><td><span class="b b-b4">묶음 4</span></td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/craft.toml [craft] · craft_recipes.json rules·recipes</p>
+<ul><li>단조 잠재력 = 기본 + 품질(보통·좋음·훌륭함·걸작 +0/3/6/10) + ⌊숙련 ÷ 5⌋(최대 +10) + LUK ÷ 20(최대 +7.5) + ◆ 바탕 보너스(◆0~4 +0/2/4/6/10) + 정수 +20(T4).</li><li>품질 확률: 숙련 0 = 70/22/7/1% → 숙련 50+ = 45/32/17/6%, 숙련 100부터 걸작 ×2(걸작은 전체 공지).</li><li>단조 대상: 근접·방어구·활·석궁·지팡이·완드(총·방패·장신구 제외). 등급 판정 = craft_tables.json tiers(318개 + 이름공간 규칙).</li></ul>
+<h3>능력 부여 · 과부여 </h3>
+<ul><li>옵션 칸: 부여하는 사람 숙련 기준 숙련 0 2칸 → 숙련 20 3칸 → 숙련 40 4칸 → 숙련 120 5칸(절대 상한 5).</li><li>옵션 단계 상한 = max(1, ⌊유효 Lv ÷ 10⌋) · 같은 그룹 둘째부터 ×1.5 · 단계 할증 +15%/단계.</li><li>잠재력 안 = 100% 확정. 넘기면 과부여 도박: 성공률 = clamp(100 + 200 × 남는 잠재력 ÷ 최대 + 숙련 × 0.4(최대 +30), 5~95%) → 끝나면 <b>완성 잠금</b>, 실패해도 메소·포인트 소모. 첫 옵션 보존 = LUK ÷ 3%.</li><li>음수 옵션 = 잠재력 50% 환급(최대 3단계). 부여 포인트 할인 숙련당 0.4%(최대 20%). 빛나는 기회는 꺼짐(0).</li></ul>
+<div class="tw"><table id="t-craftopt" class="" data-rows="30">
+<thead><tr><th>옵션</th><th>id</th><th>단계 값</th><th>최대 단계</th><th>잠재력 비용</th><th>그룹</th><th>재료 계열</th><th>대상</th><th>해금 Lv</th></tr></thead><tbody>
+<tr><td>공격력</td><td><code>atk</code></td><td>0.5</td><td>4</td><td>5</td><td>attack</td><td>금속</td><td>근접</td><td></td></tr>
+<tr><td>공격력 %</td><td><code>mdmg</code></td><td>0.03</td><td>5</td><td>6</td><td>attack</td><td>금속</td><td>근접</td><td></td></tr>
+<tr><td>방어 관통</td><td><code>pierce</code></td><td>1</td><td>4</td><td>5</td><td>attack</td><td>금속</td><td>근접</td><td></td></tr>
+<tr><td>치명 확률</td><td><code>crit</code></td><td>0.02</td><td>5</td><td>7</td><td>crit</td><td>마나</td><td>근접, 활</td><td>10</td></tr>
+<tr><td>치명 피해</td><td><code>critd</code></td><td>0.05</td><td>4</td><td>6</td><td>crit</td><td>마나</td><td>근접, 활</td><td>10</td></tr>
+<tr><td>흡혈</td><td><code>leech</code></td><td>0.01</td><td>3</td><td>8</td><td>survive</td><td>짐승</td><td>근접</td><td>10</td></tr>
+<tr><td>밀쳐내기</td><td><code>kbk</code></td><td>0.2</td><td>3</td><td>3</td><td>aux</td><td>짐승</td><td>근접</td><td></td></tr>
+<tr><td>공격 속도</td><td><code>aspd</code></td><td>0.05</td><td>4</td><td>6</td><td>speed</td><td>목재</td><td>근접</td><td>20</td></tr>
+<tr><td>화살 피해</td><td><code>arrow</code></td><td>0.04</td><td>5</td><td>6</td><td>attack</td><td>목재</td><td>활</td><td></td></tr>
+<tr><td>당김 속도</td><td><code>draw</code></td><td>0.05</td><td>3</td><td>5</td><td>aux</td><td>목재</td><td>활</td><td></td></tr>
+<tr><td>화살 속도</td><td><code>avel</code></td><td>0.05</td><td>3</td><td>3</td><td>aux</td><td>천</td><td>활</td><td></td></tr>
+<tr><td>학파 주문력</td><td><code>spell</code></td><td>0.03</td><td>5</td><td>6</td><td>attack</td><td>마나</td><td>지팡이</td><td></td></tr>
+<tr><td>주문 치명</td><td><code>scrit</code></td><td>2</td><td>4</td><td>7</td><td>crit</td><td>마나</td><td>지팡이</td><td>10</td></tr>
+<tr><td>주문 치명 피해</td><td><code>scritd</code></td><td>5</td><td>3</td><td>6</td><td>crit</td><td>마나</td><td>지팡이</td><td>10</td></tr>
+<tr><td>시전 가속</td><td><code>haste</code></td><td>2</td><td>3</td><td>6</td><td>aux</td><td>약품</td><td>지팡이</td><td></td></tr>
+<tr><td>방어력</td><td><code>def</code></td><td>0.5</td><td>4</td><td>5</td><td>defense</td><td>금속</td><td>방어구</td><td></td></tr>
+<tr><td>방어 강도</td><td><code>tough</code></td><td>0.5</td><td>3</td><td>5</td><td>defense</td><td>금속</td><td>방어구</td><td></td></tr>
+<tr><td>넉백 저항</td><td><code>kbres</code></td><td>0.03</td><td>3</td><td>4</td><td>defense</td><td>금속</td><td>방어구</td><td></td></tr>
+<tr><td>최대 체력</td><td><code>hp</code></td><td>1</td><td>3</td><td>5</td><td>life</td><td>짐승</td><td>방어구</td><td></td></tr>
+<tr><td>받는 치유</td><td><code>heal</code></td><td>0.02</td><td>4</td><td>4</td><td>life</td><td>약품</td><td>방어구</td><td></td></tr>
+<tr><td>방어력 증폭</td><td><code>res</code></td><td>0.02</td><td>3</td><td>8</td><td>evade</td><td>천</td><td>방어구</td><td>20</td></tr>
+<tr><td>회피</td><td><code>dodge</code></td><td>0.01</td><td>2</td><td>9</td><td>evade</td><td>천</td><td>방어구</td><td>20</td></tr>
+<tr><td>공격력 %</td><td><code>amel</code></td><td>0.02</td><td>3</td><td>4</td><td>aux</td><td>금속</td><td>방어구</td><td></td></tr>
+<tr><td>화살 피해</td><td><code>aarrow</code></td><td>0.02</td><td>3</td><td>4</td><td>aux</td><td>목재</td><td>방어구</td><td></td></tr>
+<tr><td>주문력</td><td><code>aspell</code></td><td>0.02</td><td>3</td><td>4</td><td>aux</td><td>마나</td><td>방어구</td><td></td></tr>
+<tr><td>이동 속도</td><td><code>mspd</code></td><td>0.02</td><td>3</td><td>6</td><td>speed</td><td>천</td><td>방어구</td><td>20</td></tr>
+<tr><td>최대 체력 감소</td><td><code>neg_hp</code></td><td>-1</td><td>3</td><td>5</td><td>neg</td><td>짐승</td><td>근접, 활, 지팡이, 방어구</td><td></td></tr>
+<tr><td>방어력 감소</td><td><code>neg_def</code></td><td>-0.5</td><td>3</td><td>5</td><td>neg</td><td>금속</td><td>근접, 활, 지팡이, 방어구</td><td></td></tr>
+<tr><td>이동 속도 감소</td><td><code>neg_mspd</code></td><td>-0.02</td><td>3</td><td>6</td><td>neg</td><td>천</td><td>근접, 활, 지팡이, 방어구</td><td></td></tr>
+<tr><td>공격 속도 감소</td><td><code>neg_aspd</code></td><td>-0.05</td><td>3</td><td>6</td><td>neg</td><td>목재</td><td>근접</td><td></td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/craft_tables.json options(30)</p>
+<h3>장인 숙련 </h3>
+<ul><li>상한 = min(140, 유효 레벨) <span class="b b-b4">묶음 4</span> (라이브 120). 다음 레벨 XP = 10 × (지금 Lv + 1).</li><li>마일스톤 10, 20, 40, 70, 100, 120, 140 — 10 T2 · 20 T3·3칸 · 40 4칸 · 100 걸작 ×2 · 120 5칸 · 140 Lv140 마이스터 장비.</li><li>따라잡기: 숙련 &lt; 유효 Lv − 20 이면 XP ×3. 체감: 숙련 20+ T1 XP 0 · 35+ T2 절반.</li></ul>
+<p><span class="b b-diff">문서와 다름</span> 숙련 상한이 140 으로 오른다.</p>
+<h3>마이스터 T5 <span class="b b-b4">묶음 4</span></h3>
+<ul><li>제작 실패 없음. 단조 창 23 「제작 ▶」 → 9×6 마이스터 제작 창(레시피 · 모양 ◀▶ · 보스 재료 칸 · 핵심 소재 칸(정수) · 미리보기 · 두 번 눌러 제작). 메소는 마지막에 빠지고 실패하면 전부 되돌림.</li><li>결과 장비 Lv = clamp(min(숙련, 유효 Lv), 120, 140) · 대역 정규화 기준 Lv120(Lv100 옵션 ×0.8696 · 140 ×1.1304, 바탕 ×1.0648).</li><li>잠재력 = 기본 + 품질 + min(10, 숙련/5) + LUK 보정(최대 7) + 정수 20 − ⌊(난이도 − 숙련)⁺ × 0.5⌋ → 무기 최고 127 · 막 열린 장인(숙련 50) 65.</li><li>수치: 무기 ×18/7(검 합 19) · 방어 ×1.6 · 부위당 강도/체력 +2 · 정련 +15 · 수리 등급 5(40,000). 전승은 마이스터가 끼면 <b>정련만</b>. 분해 = 레시피·부여 포인트 30%(바탕 0), 매각·낙인 지우기 거부.</li></ul>
+<div class="tw"><table id="t-meister" class="" data-rows="13">
+<thead><tr><th>id</th><th>이름</th><th>종류</th><th>메소</th><th>포인트</th><th>기본 잠재력</th><th>난이도</th><th>보스 재료</th><th>XP</th><th>모양</th><th>재료</th></tr></thead><tbody>
+<tr><td><code>m5_sword</code></td><td>마이스터 소드</td><td>근접</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_skelegon_bone ×20, leafre_dragon_scale ×10</td></tr>
+<tr><td><code>m5_blunt</code></td><td>마이스터 해머</td><td>근접</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_kentaurus_shoe ×20, elnath_dark_crystal_ore ×10</td></tr>
+<tr><td><code>m5_polearm</code></td><td>마이스터 폴암</td><td>근접</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_dragon_scale ×20, elnath_lycan_claw ×10</td></tr>
+<tr><td><code>m5_dagger</code></td><td>마이스터 대거</td><td>근접</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, elnath_lycan_claw ×20, elnath_white_fang_tail ×10</td></tr>
+<tr><td><code>m5_scythe</code></td><td>마이스터 사이드</td><td>근접</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_beetle_horn ×20, elnath_hector_tail ×10</td></tr>
+<tr><td><code>m5_bow</code></td><td>마이스터 보우</td><td>활</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_harp_feather ×20, leafre_beetle_horn ×10</td></tr>
+<tr><td><code>m5_xbow</code></td><td>마이스터 크로스보우</td><td>활</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_kentaurus_shoe ×15, leafre_harp_feather ×15</td></tr>
+<tr><td><code>m5_staff</code></td><td>마이스터 스태프</td><td>지팡이</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>3</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, elnath_fire_ore ×20, elnath_yeti_horn ×10</td></tr>
+<tr><td><code>m5_wand</code></td><td>마이스터 완드</td><td>지팡이</td><td>3,000,000</td><td>30,000</td><td>80</td><td>100</td><td>2</td><td>800</td><td>1</td><td>netherite_ingot ×2, 오리하르콘의 원석 ×2, leafre_dragon_essence ×2, leafre_minar_herb ×20, elnath_yeti_horn ×10</td></tr>
+<tr><td><code>m5_head</code></td><td>마이스터 투구</td><td>방어구</td><td>1,500,000</td><td>18,000</td><td>72</td><td>90</td><td>1</td><td>600</td><td>9</td><td>netherite_ingot ×1, 오리하르콘의 원석 ×1, leafre_manon_tail ×1, elnath_pepe_beak ×20</td></tr>
+<tr><td><code>m5_chest</code></td><td>마이스터 갑옷</td><td>방어구</td><td>1,500,000</td><td>18,000</td><td>72</td><td>90</td><td>1</td><td>600</td><td>9</td><td>netherite_ingot ×1, 오리하르콘의 원석 ×1, leafre_manon_tail ×1, elnath_jr_yeti_skin ×20</td></tr>
+<tr><td><code>m5_legs</code></td><td>마이스터 바지</td><td>방어구</td><td>1,500,000</td><td>18,000</td><td>72</td><td>90</td><td>1</td><td>600</td><td>9</td><td>netherite_ingot ×1, 오리하르콘의 원석 ×1, leafre_manon_tail ×1, elnath_hector_tail ×20</td></tr>
+<tr><td><code>m5_feet</code></td><td>마이스터 신발</td><td>방어구</td><td>1,500,000</td><td>18,000</td><td>72</td><td>90</td><td>1</td><td>600</td><td>9</td><td>netherite_ingot ×1, 오리하르콘의 원석 ×1, leafre_manon_tail ×1, elnath_white_fang_tail ×20</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/craft_recipes.json(생성물 — 정본 maple/data/craft_recipes.json)</p>
+<div class="tw"><table id="t-socketroll" class="" data-rows="4">
+<thead><tr><th>잠재력 ÷ 레시피 기본</th><th>◆ 굴림</th><th>크리스타 칸</th></tr></thead><tbody>
+<tr><td>0 ~ 0.95</td><td>◆0 40% · ◆1 50% · ◆2 10%</td><td>0칸 40% · 1칸 60% · 2칸 0%</td></tr>
+<tr><td>0.95 ~ 1.15</td><td>◆1 40% · ◆2 40% · ◆3 20%</td><td>0칸 0% · 1칸 80% · 2칸 20%</td></tr>
+<tr><td>1.15 ~ 1.35</td><td>◆2 30% · ◆3 45% · ◆4 25%</td><td>0칸 0% · 1칸 30% · 2칸 70%</td></tr>
+<tr><td>1.35 이상</td><td>◆3 50% · ◆4 50%</td><td>0칸 0% · 1칸 0% · 2칸 100%</td></tr>
+</tbody></table></div>
+<p class="src">출처: craft_recipes.json rules.socketRoll × crysta.toml socketsByGrade</p>
+<p><span class="b b-diff">문서와 다름</span> 굴리는 것은 ◆0~4, 실제 칸은 0~2.</p>
+<p>마이스터 보스 재료(출처 노멀 권장 Lv ≥ 80): 괴상한 뿔 100, 이그니티움 주괴 95, 커스뮴 주괴 90, 위더라이트 주괴 80, 엔더라이트 주괴 80, 폭풍의 정수 80.</p>
+<h3>전승 </h3>
+<ul><li>옛 장비의 정련 단계 + 장인 부여 전부를 같은 종류·같은 부위의 새 장비(정련 0·부여 없음)로. 옛 장비는 사라지고 박힌 크리스타는 무료로 가방에.</li><li>비용: 정련 몫 = 평균 정련 비용의 10%(최소 10,000) + 부여 몫 T1~T4 20,000/50,000/200,000/500,000(명장 ×2).</li><li>새 장비 등급 ≥ 옮길 부여 등급. 마이스터가 끼면 정련만 <span class="b b-b4">묶음 4</span>.</li></ul>
+<h3>분해(재료 포인트로 녹이기) </h3>
+<div class="tw"><table id="t-salvage" class="" data-rows="8">
+<thead><tr><th>하루 몫</th><th>키</th><th>한도(포인트)</th></tr></thead><tbody>
+<tr><td>상점 물건</td><td><code>shop</code></td><td>2,000</td></tr>
+<tr><td>잡동사니</td><td><code>junk</code></td><td>1,000</td></tr>
+<tr><td>일반 장비</td><td><code>gear</code></td><td>3,000</td></tr>
+<tr><td>모험 장비</td><td><code>adventure</code></td><td>20,000</td></tr>
+<tr><td>보스 물건</td><td><code>boss</code></td><td>40,000</td></tr>
+<tr><td>전직 증표</td><td><code>token</code></td><td>20,000</td></tr>
+<tr><td>크리스타</td><td><code>gem</code></td><td>20,000</td></tr>
+<tr><td>정련 몫</td><td><code>refine</code></td><td>10,000</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/craft.toml [salvage] daily</p>
+<ul><li>포인트 = 가치(메소어치) × 비율 ÷ 25. 가치 = 매각표 · 정련 경로 비용 × 0.05 · 크리스타 lostValue × 0.2 · 상점가 · ◆/추가특수/증표/설계도 표.</li><li>◆ 바탕 덧값 ◆0~4 0/12,500/25,000/50,000/100,000 · 추가·특수 장비 0/25,000/50,000/75,000/100,000 · 증표 2~4차 37,500/100,000/250,000.</li><li>장비·장신구(gear·grade·shop_gear·unique·extra)는 6계열에 1/6씩 고루 나눔(spreadSplit). 한 계열이라도 상한(200,000)을 넘으면 그 물건은 바구니에 남음.</li><li>옛 「분해」(숫돌 두 번) = 이제 「낙인 지우기」: 단조 포인트 30% 환급, 장비는 남음.</li></ul>
+<h3>매각 상인 </h3>
+<ul><li>가격표 sell_prices.json: 일반 아이템 2,891 · 메이플 잡템 130 · 고유·카탈로그 2,282 · 추가·특수 장비 7. 하루 24시간 이동 창, 품목별 한도.</li><li>카탈로그 장비: 미감정만 매각 = 요구 Lv × 300 × 희귀도 배수(일반 1 · 희귀 1.5 · 영웅 2 · 전설 3 · 신화 4), 하루 3개. 감정한 장비(sg_trait)는 거부.</li><li>추가·특수 장비 ◆1~4 = extra#1 25,000, extra#2 50,000, extra#3 75,000, extra#4 100,000, special#2 50,000, special#3 75,000, special#4 100,000 <span class="b b-b4">묶음 4</span>(가격표는 라이브, 받는 Java 는 묶음 4).</li><li>거부: 장인 장비(sg_craft)·박힌 크리스타(「먼저 빼세요」)·크리스타·원석·증표·증서·물약·뱃지·설계도, 가격표에 없는 UNCOMMON 이상.</li></ul>
+<h3>수리 </h3>
+<p>비용 = ⌈(손상 ÷ 최대) × 등급 T1~T5 2,000/5,000/15,000/30,000/40,000 × (1 + 0.1 × 정련) × (1 − 손재주 할인)⌉. 강화한 장비는 다 닳아도 사라지지 않고 「부서짐」(능력치 꺼짐).</p>
+</section>
+<section id="crysta"><h2>⑤ 크리스타 </h2>
+<div class="tw"><table id="t-purity" class="" data-rows="10">
+<thead><tr><th>순도</th><th>이름</th><th>값 배율(완벽한 1)</th><th>얻는 길</th><th>강화 → 다음 순도(같은 이름 2개 +)</th><th>분실물 가치</th><th>빼기 비용</th><th>상태</th></tr></thead><tbody>
+<tr><td>1</td><td>갈라진</td><td>0.25</td><td>드롭(노멀)</td><td>미스릴의 원석 ×2 + 20,000</td><td>50,000</td><td>10,000</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>2</td><td>다듬은</td><td>0.45</td><td>드롭(하드) · 강화</td><td>아다만티움의 원석 ×2 + 100,000</td><td>150,000</td><td>30,000</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>3</td><td>흠없는</td><td>0.7</td><td>드롭(카오스) · 강화</td><td>오리하르콘의 원석 ×2 + 500,000</td><td>500,000</td><td>100,000</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>4</td><td>완벽한</td><td>1</td><td>드롭(익스트림) · 강화</td><td>— (빛나는은 드롭 전용)</td><td>1,500,000</td><td>300,000</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>5</td><td>빛나는</td><td>1.4</td><td>보스 희귀 드롭만</td><td>오리하르콘의 원석 ×2 + 500,000</td><td>1,500,000</td><td>300,000</td><td><span class="b b-live">라이브</span></td></tr>
+<tr><td>6</td><td>찬란한</td><td>1.82</td><td>빛나는 2개 강화</td><td>오리하르콘의 원석 ×3 + 1,000,000</td><td>3,000,000</td><td>500,000</td><td><span class="b b-b4">묶음 4</span></td></tr>
+<tr><td>7</td><td>신성한</td><td>2.24</td><td>찬란한 2개 강화</td><td>오리하르콘의 원석 ×4 + 2,000,000</td><td>6,000,000</td><td>800,000</td><td><span class="b b-b4">묶음 4</span></td></tr>
+<tr><td>8</td><td>전설의</td><td>2.8</td><td>신성한 2개 강화</td><td>오리하르콘의 원석 ×5 + 4,000,000</td><td>12,000,000</td><td>1,200,000</td><td><span class="b b-b4">묶음 4</span></td></tr>
+<tr><td>9</td><td>신화의</td><td>3.5</td><td>전설의 2개 강화</td><td>오리하르콘의 원석 ×6 + 8,000,000</td><td>24,000,000</td><td>2,000,000</td><td><span class="b b-b4">묶음 4</span></td></tr>
+<tr><td>10</td><td>초월의</td><td>4.48</td><td>신화의 2개 강화</td><td>— 최고</td><td>48,000,000</td><td>3,000,000</td><td><span class="b b-b4">묶음 4</span></td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/boss_gems.json purity · crysta.toml upgrade*·lostValue·removeFee·dropOnly</p>
+<ul><li>10강 하나 = 빛나는 32개 + 오리하르콘 88 + 메소 4,000만. 같은 이름(같은 보스 보석)끼리만. 완벽한 이상 강화는 장 상한 100(4장)부터.</li><li>크리스타 칸: ◆0~4 = 0/1/1/2/2칸(최대 2) · 추가·특수 장비 1칸 · 마이스터 = 제작 때 0~2칸 굴림.</li><li>값 = 원형 기준값(L 1.0·완벽한) × 순도 배율 × L, L = clamp(보스 노멀 권장 Lv 25 → 0.5 … 100 → 1.0). 칸 종류: 무기(근접·활·지팡이) · 투구 · 방어구(몸·다리·발) · 추가(방어구 × 0.5) · 특수(무기 × 0.4).</li></ul>
+<div class="tw"><table id="t-gemcaps" class="" data-rows="11">
+<thead><tr><th>속성</th><th>크리스타 하나 상한(순도 6~10 에만)</th></tr></thead><tbody>
+<tr><td><code>minecraft:generic.armor</code></td><td>5</td></tr>
+<tr><td><code>minecraft:generic.armor_toughness</code></td><td>3.3</td></tr>
+<tr><td><code>minecraft:generic.knockback_resistance</code></td><td>0.16</td></tr>
+<tr><td><code>minecraft:generic.movement_speed</code></td><td>0.05</td></tr>
+<tr><td><code>minecraft:generic.max_health</code></td><td>12</td></tr>
+<tr><td><code>apothic_attributes:crit_chance</code></td><td>0.3</td></tr>
+<tr><td><code>apothic_attributes:armor_shred</code></td><td>0.3</td></tr>
+<tr><td><code>apothic_attributes:dodge_chance</code></td><td>0.15</td></tr>
+<tr><td><code>apothic_attributes:life_steal</code></td><td>0.15</td></tr>
+<tr><td><code>apothic_attributes:healing_received</code></td><td>0.5</td></tr>
+<tr><td><code>spell_power:critical_chance</code></td><td>30</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/boss_gems.json caps</p>
+<h3>보스별 보석(무기·방어구·투구 칸 값) </h3>
+<div class="tw"><table id="t-gems" class="" data-rows="63">
+<thead><tr><th>상태</th><th>보석</th><th>보스</th><th>원형</th><th>권장 Lv</th><th>L</th><th>무기 완벽한(4)</th><th>무기 빛나는(5)</th><th>무기 초월의(10)</th><th>방어구 4</th><th>방어구 10</th><th>투구 4</th><th>투구 10</th></tr></thead><tbody>
+<tr><td><span class="b b-live">라이브</span></td><td>해골 장교장의 견장</td><td>해골 장교장</td><td>파쇄</td><td>25</td><td>0.5</td><td>방어 파쇄 +10%</td><td>방어 파쇄 +14%</td><td>방어 파쇄 +30%</td><td>방어 +1</td><td>방어 +4.5</td><td>주문 치명 +2.5</td><td>주문 치명 +11.2</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>머쉬맘의 버섯갓</td><td>머쉬맘</td><td>수호</td><td>30</td><td>0.53</td><td>생명력 흡수 +1.6%</td><td>생명력 흡수 +2.2%</td><td>생명력 흡수 +7.2%</td><td>방어 강도 +0.53, 방어 +0.53</td><td>방어 강도 +2.4, 방어 +2.4</td><td>받는 치유 +8%</td><td>받는 치유 +35.8%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>주니어 발록의 마력석</td><td>주니어 발록</td><td>화염</td><td>40</td><td>0.6</td><td>화염 피해 +1.8</td><td>화염 피해 +2.5</td><td>화염 피해 +8.1</td><td>최대 체력 +1.8</td><td>최대 체력 +8.1</td><td>화염 주문력 +1.8</td><td>화염 주문력 +8.1</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>프랑켄로이드의 동력핵</td><td>프랑켄로이드</td><td>수호</td><td>50</td><td>0.67</td><td>생명력 흡수 +2%</td><td>생명력 흡수 +2.8%</td><td>생명력 흡수 +9%</td><td>방어 강도 +0.67, 방어 +0.67</td><td>방어 강도 +3, 방어 +3</td><td>받는 치유 +10%</td><td>받는 치유 +44.8%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>타나토스의 사신 휘장</td><td>타나토스</td><td>치명 확률</td><td>50</td><td>0.67</td><td>치명 확률 +6.7%</td><td>치명 확률 +9.3%</td><td>치명 확률 +29.9%</td><td>방어 강도 +1.3</td><td>방어 강도 +3.3</td><td>회피 +3.3%</td><td>회피 +14.9%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>데미안의 검은 깃털</td><td>데미안</td><td>번개</td><td>50</td><td>0.67</td><td>치명 확률 +3.3%, 치명 피해 +10%</td><td>치명 확률 +4.7%, 치명 피해 +14%</td><td>치명 확률 +14.9%, 치명 피해 +44.8%</td><td>이동 속도 +1.3%</td><td>이동 속도 +5%</td><td>번개 주문력 +2</td><td>번개 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>킹 슬라임의 왕관</td><td>킹 슬라임</td><td>파쇄</td><td>50</td><td>0.67</td><td>방어 파쇄 +13.3%</td><td>방어 파쇄 +18.7%</td><td>방어 파쇄 +30%</td><td>방어 +1.3</td><td>방어 +5</td><td>주문 치명 +3.3</td><td>주문 치명 +14.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>피닉스의 불꽃 깃</td><td>피닉스</td><td>화염</td><td>50</td><td>0.67</td><td>화염 피해 +2</td><td>화염 피해 +2.8</td><td>화염 피해 +9</td><td>최대 체력 +2</td><td>최대 체력 +9</td><td>화염 주문력 +2</td><td>화염 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>반 레온의 사자 문장</td><td>반 레온</td><td>수호</td><td>50</td><td>0.67</td><td>생명력 흡수 +2%</td><td>생명력 흡수 +2.8%</td><td>생명력 흡수 +9%</td><td>방어 강도 +0.67, 방어 +0.67</td><td>방어 강도 +3, 방어 +3</td><td>받는 치유 +10%</td><td>받는 치유 +44.8%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>다일의 투사 증표</td><td>다일</td><td>치명 피해</td><td>60</td><td>0.73</td><td>치명 피해 +22%, 방어 관통 +5.9</td><td>치명 피해 +30.8%, 방어 관통 +8.2</td><td>치명 피해 +98.5%, 방어 관통 +26.3</td><td>최대 체력 +2.9</td><td>최대 체력 +12</td><td>비전 주문력 +2.2</td><td>비전 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>킹 스네이크의 독니</td><td>킹 스네이크</td><td>흡혈</td><td>60</td><td>0.73</td><td>생명력 흡수 +4.4%</td><td>생명력 흡수 +6.2%</td><td>생명력 흡수 +15%</td><td>받는 치유 +5.9%</td><td>받는 치유 +26.3%</td><td>치유 주문력 +2.2</td><td>치유 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>듄켈의 어둠 결정</td><td>듄켈</td><td>영혼</td><td>60</td><td>0.73</td><td>방어 관통 +4.4, 생명력 흡수 +2.2%</td><td>방어 관통 +6.2, 생명력 흡수 +3.1%</td><td>방어 관통 +19.7, 생명력 흡수 +9.9%</td><td>최대 체력 +2.2</td><td>최대 체력 +9.9</td><td>영혼 주문력 +2.2</td><td>영혼 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>데우의 사막 진주</td><td>데우</td><td>치명 피해</td><td>60</td><td>0.73</td><td>치명 피해 +22%, 방어 관통 +5.9</td><td>치명 피해 +30.8%, 방어 관통 +8.2</td><td>치명 피해 +98.5%, 방어 관통 +26.3</td><td>최대 체력 +2.9</td><td>최대 체력 +12</td><td>비전 주문력 +2.2</td><td>비전 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>눈사람의 얼음 심장</td><td>눈사람</td><td>냉기</td><td>60</td><td>0.73</td><td>냉기 피해 +2.2</td><td>냉기 피해 +3.1</td><td>냉기 피해 +9.9</td><td>넉백 저항 +4.4%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.2</td><td>냉기 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>벨룸의 심연 비늘</td><td>벨룸</td><td>화염</td><td>60</td><td>0.73</td><td>화염 피해 +2.2</td><td>화염 피해 +3.1</td><td>화염 피해 +9.9</td><td>최대 체력 +2.2</td><td>최대 체력 +9.9</td><td>화염 주문력 +2.2</td><td>화염 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>게이트키퍼의 열쇠</td><td>게이트키퍼</td><td>수호</td><td>60</td><td>0.73</td><td>생명력 흡수 +2.2%</td><td>생명력 흡수 +3.1%</td><td>생명력 흡수 +9.9%</td><td>방어 강도 +0.73, 방어 +0.73</td><td>방어 강도 +3.3, 방어 +3.3</td><td>받는 치유 +11%</td><td>받는 치유 +49.3%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>아카이럼의 시간 조각</td><td>아카이럼</td><td>번개</td><td>70</td><td>0.8</td><td>치명 확률 +4%, 치명 피해 +12%</td><td>치명 확률 +5.6%, 치명 피해 +16.8%</td><td>치명 확률 +17.9%, 치명 피해 +53.8%</td><td>이동 속도 +1.6%</td><td>이동 속도 +5%</td><td>번개 주문력 +2.4</td><td>번개 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>카웅의 흑요 핵</td><td>카웅</td><td>수호</td><td>70</td><td>0.8</td><td>생명력 흡수 +2.4%</td><td>생명력 흡수 +3.4%</td><td>생명력 흡수 +10.8%</td><td>방어 강도 +0.8, 방어 +0.8</td><td>방어 강도 +3.3, 방어 +3.6</td><td>받는 치유 +12%</td><td>받는 치유 +50%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>반반의 모래시계</td><td>반반</td><td>신속</td><td>70</td><td>0.8</td><td>치명 확률 +4.8%</td><td>치명 확률 +6.7%</td><td>치명 확률 +21.5%</td><td>이동 속도 +2%</td><td>이동 속도 +5%</td><td>회피 +3.2%</td><td>회피 +14.3%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>스텀피의 나이테</td><td>스텀피</td><td>흡혈</td><td>70</td><td>0.8</td><td>생명력 흡수 +4.8%</td><td>생명력 흡수 +6.7%</td><td>생명력 흡수 +15%</td><td>받는 치유 +6.4%</td><td>받는 치유 +28.7%</td><td>치유 주문력 +2.4</td><td>치유 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>그리프의 서리 발톱</td><td>그리프</td><td>냉기</td><td>70</td><td>0.8</td><td>냉기 피해 +2.4</td><td>냉기 피해 +3.4</td><td>냉기 피해 +10.8</td><td>넉백 저항 +4.8%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.4</td><td>냉기 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>크림슨 발록의 핏빛 뿔</td><td>크림슨 발록</td><td>영혼</td><td>70</td><td>0.8</td><td>방어 관통 +4.8, 생명력 흡수 +2.4%</td><td>방어 관통 +6.7, 생명력 흡수 +3.4%</td><td>방어 관통 +21.5, 생명력 흡수 +10.8%</td><td>최대 체력 +2.4</td><td>최대 체력 +10.8</td><td>영혼 주문력 +2.4</td><td>영혼 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>시그너스의 빛 깃털</td><td>시그너스</td><td>번개</td><td>80</td><td>0.87</td><td>치명 확률 +4.3%, 치명 피해 +13%</td><td>치명 확률 +6.1%, 치명 피해 +18.2%</td><td>치명 확률 +19.4%, 치명 피해 +58.3%</td><td>이동 속도 +1.7%</td><td>이동 속도 +5%</td><td>번개 주문력 +2.6</td><td>번개 주문력 +11.7</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>알리샤르의 시계추</td><td>알리샤르</td><td>신속</td><td>80</td><td>0.87</td><td>치명 확률 +5.2%</td><td>치명 확률 +7.3%</td><td>치명 확률 +23.3%</td><td>이동 속도 +2.2%</td><td>이동 속도 +5%</td><td>회피 +3.5%</td><td>회피 +15%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>레비아탄의 뿔</td><td>레비아탄</td><td>냉기</td><td>80</td><td>0.87</td><td>냉기 피해 +2.6</td><td>냉기 피해 +3.6</td><td>냉기 피해 +11.7</td><td>넉백 저항 +5.2%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.6</td><td>냉기 주문력 +11.7</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>피아누스의 지느러미</td><td>피아누스</td><td>흡혈</td><td>90</td><td>0.93</td><td>생명력 흡수 +5.6%</td><td>생명력 흡수 +7.8%</td><td>생명력 흡수 +15%</td><td>받는 치유 +7.5%</td><td>받는 치유 +33.4%</td><td>치유 주문력 +2.8</td><td>치유 주문력 +12.5</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>헤드리스 호스맨의 등불</td><td>헤드리스 호스맨</td><td>영혼</td><td>90</td><td>0.93</td><td>방어 관통 +5.6, 생명력 흡수 +2.8%</td><td>방어 관통 +7.8, 생명력 흡수 +3.9%</td><td>방어 관통 +25.1, 생명력 흡수 +12.5%</td><td>최대 체력 +2.8</td><td>최대 체력 +12</td><td>영혼 주문력 +2.8</td><td>영혼 주문력 +12.5</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>매그너스의 붉은 핵</td><td>매그너스</td><td>화염</td><td>95</td><td>0.97</td><td>화염 피해 +2.9</td><td>화염 피해 +4.1</td><td>화염 피해 +13</td><td>최대 체력 +2.9</td><td>최대 체력 +12</td><td>화염 주문력 +2.9</td><td>화염 주문력 +13</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>크세르크세스의 고대 파편</td><td>크세르크세스</td><td>파쇄</td><td>95</td><td>0.97</td><td>방어 파쇄 +19.3%</td><td>방어 파쇄 +27.1%</td><td>방어 파쇄 +30%</td><td>방어 +1.9</td><td>방어 +5</td><td>주문 치명 +4.8</td><td>주문 치명 +21.7</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>자쿰의 눈</td><td>자쿰</td><td>치명 피해</td><td>100</td><td>1</td><td>치명 피해 +30%, 방어 관통 +8</td><td>치명 피해 +42%, 방어 관통 +11.2</td><td>치명 피해 +130%, 방어 관통 +35.8</td><td>최대 체력 +4</td><td>최대 체력 +12</td><td>비전 주문력 +3</td><td>비전 주문력 +13.4</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>혼테일의 비늘</td><td>혼테일</td><td>치명 확률</td><td>100</td><td>1</td><td>치명 확률 +10%</td><td>치명 확률 +14%</td><td>치명 확률 +30%</td><td>방어 강도 +2</td><td>방어 강도 +3.3</td><td>회피 +5%</td><td>회피 +15%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>발록의 부러진 뿔</td><td>발록</td><td>영혼</td><td>70</td><td>0.8</td><td>방어 관통 +4.8, 생명력 흡수 +2.4%</td><td>방어 관통 +6.7, 생명력 흡수 +3.4%</td><td>방어 관통 +21.5, 생명력 흡수 +10.8%</td><td>최대 체력 +2.4</td><td>최대 체력 +10.8</td><td>영혼 주문력 +2.4</td><td>영혼 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>파풀라투스의 시간 톱니</td><td>파풀라투스</td><td>신속</td><td>80</td><td>0.87</td><td>치명 확률 +5.2%</td><td>치명 확률 +7.3%</td><td>치명 확률 +23.3%</td><td>이동 속도 +2.2%</td><td>이동 속도 +5%</td><td>회피 +3.5%</td><td>회피 +15%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>그림자 지팡이 조각</td><td>데보라크</td><td>영혼</td><td>60</td><td>0.73</td><td>방어 관통 +4.4, 생명력 흡수 +2.2%</td><td>방어 관통 +6.2, 생명력 흡수 +3.1%</td><td>방어 관통 +19.7, 생명력 흡수 +9.9%</td><td>최대 체력 +2.2</td><td>최대 체력 +9.9</td><td>영혼 주문력 +2.2</td><td>영혼 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>무무스의 가면 조각</td><td>로로와 무무스</td><td>냉기</td><td>60</td><td>0.73</td><td>냉기 피해 +2.2</td><td>냉기 피해 +3.1</td><td>냉기 피해 +9.9</td><td>넉백 저항 +4.4%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.2</td><td>냉기 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>타르가의 메아리 심장</td><td>타르가</td><td>영혼</td><td>80</td><td>0.87</td><td>방어 관통 +5.2, 생명력 흡수 +2.6%</td><td>방어 관통 +7.3, 생명력 흡수 +3.6%</td><td>방어 관통 +23.3, 생명력 흡수 +11.7%</td><td>최대 체력 +2.6</td><td>최대 체력 +11.7</td><td>영혼 주문력 +2.6</td><td>영혼 주문력 +11.7</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>포이즌 퍼퍼의 가시 비늘</td><td>포이즌 퍼퍼</td><td>수호</td><td>50</td><td>0.67</td><td>생명력 흡수 +2%</td><td>생명력 흡수 +2.8%</td><td>생명력 흡수 +9%</td><td>방어 강도 +0.67, 방어 +0.67</td><td>방어 강도 +3, 방어 +3</td><td>받는 치유 +10%</td><td>받는 치유 +44.8%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>라타니카의 유령 닻</td><td>라타니카</td><td>흡혈</td><td>70</td><td>0.8</td><td>생명력 흡수 +4.8%</td><td>생명력 흡수 +6.7%</td><td>생명력 흡수 +15%</td><td>받는 치유 +6.4%</td><td>받는 치유 +28.7%</td><td>치유 주문력 +2.4</td><td>치유 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>파우스트의 바위 주먹</td><td>파우스트</td><td>치명 피해</td><td>50</td><td>0.67</td><td>치명 피해 +20%, 방어 관통 +5.3</td><td>치명 피해 +28%, 방어 관통 +7.5</td><td>치명 피해 +89.6%, 방어 관통 +23.9</td><td>최대 체력 +2.7</td><td>최대 체력 +12</td><td>비전 주문력 +2</td><td>비전 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>플레임 골렘의 불씨 핵</td><td>플레임 골렘</td><td>화염</td><td>50</td><td>0.67</td><td>화염 피해 +2</td><td>화염 피해 +2.8</td><td>화염 피해 +9</td><td>최대 체력 +2</td><td>최대 체력 +9</td><td>화염 주문력 +2</td><td>화염 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>잭 오 랜턴의 등불 씨앗</td><td>잭 오 랜턴</td><td>화염</td><td>70</td><td>0.8</td><td>화염 피해 +2.4</td><td>화염 피해 +3.4</td><td>화염 피해 +10.8</td><td>최대 체력 +2.4</td><td>최대 체력 +10.8</td><td>화염 주문력 +2.4</td><td>화염 주문력 +10.8</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>펌킨 나이트의 호박 투구</td><td>펌킨 나이트</td><td>파쇄</td><td>50</td><td>0.67</td><td>방어 파쇄 +13.3%</td><td>방어 파쇄 +18.7%</td><td>방어 파쇄 +30%</td><td>방어 +1.3</td><td>방어 +5</td><td>주문 치명 +3.3</td><td>주문 치명 +14.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>듀라한의 검은 망토</td><td>듀라한</td><td>영혼</td><td>60</td><td>0.73</td><td>방어 관통 +4.4, 생명력 흡수 +2.2%</td><td>방어 관통 +6.2, 생명력 흡수 +3.1%</td><td>방어 관통 +19.7, 생명력 흡수 +9.9%</td><td>최대 체력 +2.2</td><td>최대 체력 +9.9</td><td>영혼 주문력 +2.2</td><td>영혼 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>이블 산타의 검은 방울</td><td>이블 산타</td><td>냉기</td><td>60</td><td>0.73</td><td>냉기 피해 +2.2</td><td>냉기 피해 +3.1</td><td>냉기 피해 +9.9</td><td>넉백 저항 +4.4%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.2</td><td>냉기 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>해골 주술사의 뼈 주술서</td><td>해골 주술사</td><td>영혼</td><td>50</td><td>0.67</td><td>방어 관통 +4, 생명력 흡수 +2%</td><td>방어 관통 +5.6, 생명력 흡수 +2.8%</td><td>방어 관통 +17.9, 생명력 흡수 +9%</td><td>최대 체력 +2</td><td>최대 체력 +9</td><td>영혼 주문력 +2</td><td>영혼 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>이단 선교사의 이단 경전</td><td>이단 선교사</td><td>번개</td><td>50</td><td>0.67</td><td>치명 확률 +3.3%, 치명 피해 +10%</td><td>치명 확률 +4.7%, 치명 피해 +14%</td><td>치명 확률 +14.9%, 치명 피해 +44.8%</td><td>이동 속도 +1.3%</td><td>이동 속도 +5%</td><td>번개 주문력 +2</td><td>번개 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>뱀파이어의 핏빛 송곳니</td><td>뱀파이어</td><td>흡혈</td><td>50</td><td>0.67</td><td>생명력 흡수 +4%</td><td>생명력 흡수 +5.6%</td><td>생명력 흡수 +15%</td><td>받는 치유 +5.3%</td><td>받는 치유 +23.9%</td><td>치유 주문력 +2</td><td>치유 주문력 +9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>나이트메어의 악몽 발굽</td><td>나이트메어</td><td>신속</td><td>50</td><td>0.67</td><td>치명 확률 +4%</td><td>치명 확률 +5.6%</td><td>치명 확률 +17.9%</td><td>이동 속도 +1.7%</td><td>이동 속도 +5%</td><td>회피 +2.7%</td><td>회피 +12%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>MT-09의 조준 렌즈</td><td>MT-09</td><td>치명 확률</td><td>60</td><td>0.73</td><td>치명 확률 +7.3%</td><td>치명 확률 +10.3%</td><td>치명 확률 +30%</td><td>방어 강도 +1.5</td><td>방어 강도 +3.3</td><td>회피 +3.7%</td><td>회피 +15%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>킹 클랑의 집게발</td><td>킹 클랑</td><td>수호</td><td>60</td><td>0.73</td><td>생명력 흡수 +2.2%</td><td>생명력 흡수 +3.1%</td><td>생명력 흡수 +9.9%</td><td>방어 강도 +0.73, 방어 +0.73</td><td>방어 강도 +3.3, 방어 +3.3</td><td>받는 치유 +11%</td><td>받는 치유 +49.3%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>아이스 나이트의 얼음 도끼날</td><td>아이스 나이트</td><td>냉기</td><td>60</td><td>0.73</td><td>냉기 피해 +2.2</td><td>냉기 피해 +3.1</td><td>냉기 피해 +9.9</td><td>넉백 저항 +4.4%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.2</td><td>냉기 주문력 +9.9</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>코랄 골렘의 산호 심장</td><td>코랄 골렘</td><td>수호</td><td>60</td><td>0.73</td><td>생명력 흡수 +2.2%</td><td>생명력 흡수 +3.1%</td><td>생명력 흡수 +9.9%</td><td>방어 강도 +0.73, 방어 +0.73</td><td>방어 강도 +3.3, 방어 +3.3</td><td>받는 치유 +11%</td><td>받는 치유 +49.3%</td></tr>
+<tr><td><span class="b b-live">라이브</span></td><td>화염 망령의 잿불 방패</td><td>화염 망령</td><td>화염</td><td>60</td><td>0.73</td><td>화염 피해 +2.2</td><td>화염 피해 +3.1</td><td>화염 피해 +9.9</td><td>최대 체력 +2.2</td><td>최대 체력 +9.9</td><td>화염 주문력 +2.2</td><td>화염 주문력 +9.9</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>블러디퀸의 해적 나침반</td><td>블러디퀸</td><td>냉기</td><td>70</td><td>0.8</td><td>냉기 피해 +2.4</td><td>냉기 피해 +3.4</td><td>냉기 피해 +10.8</td><td>넉백 저항 +4.8%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.4</td><td>냉기 주문력 +10.8</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>엘리자의 서리 핵</td><td>엘리자</td><td>냉기</td><td>70</td><td>0.8</td><td>냉기 피해 +2.4</td><td>냉기 피해 +3.4</td><td>냉기 피해 +10.8</td><td>넉백 저항 +4.8%</td><td>넉백 저항 +16%</td><td>냉기 주문력 +2.4</td><td>냉기 주문력 +10.8</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>키메라의 시든 가시</td><td>키메라</td><td>영혼</td><td>70</td><td>0.8</td><td>방어 관통 +4.8, 생명력 흡수 +2.4%</td><td>방어 관통 +6.7, 생명력 흡수 +3.4%</td><td>방어 관통 +21.5, 생명력 흡수 +10.8%</td><td>최대 체력 +2.4</td><td>최대 체력 +10.8</td><td>영혼 주문력 +2.4</td><td>영혼 주문력 +10.8</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>도도의 용암 송곳니</td><td>도도</td><td>화염</td><td>80</td><td>0.87</td><td>화염 피해 +2.6</td><td>화염 피해 +3.6</td><td>화염 피해 +11.7</td><td>최대 체력 +2.6</td><td>최대 체력 +11.7</td><td>화염 주문력 +2.6</td><td>화염 주문력 +11.7</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>그릴레의 화석 척추</td><td>그릴레</td><td>파쇄</td><td>80</td><td>0.87</td><td>방어 파쇄 +17.3%</td><td>방어 파쇄 +24.3%</td><td>방어 파쇄 +30%</td><td>방어 +1.7</td><td>방어 +5</td><td>주문 치명 +4.3</td><td>주문 치명 +19.4</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>에피네아의 이끼 심장</td><td>에피네아</td><td>수호</td><td>80</td><td>0.87</td><td>생명력 흡수 +2.6%</td><td>생명력 흡수 +3.6%</td><td>생명력 흡수 +11.7%</td><td>방어 강도 +0.87, 방어 +0.87</td><td>방어 강도 +3.3, 방어 +3.9</td><td>받는 치유 +13%</td><td>받는 치유 +50%</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>릴리노흐의 수호 문장</td><td>릴리노흐</td><td>치명 확률</td><td>80</td><td>0.87</td><td>치명 확률 +8.7%</td><td>치명 확률 +12.1%</td><td>치명 확률 +30%</td><td>방어 강도 +1.7</td><td>방어 강도 +3.3</td><td>회피 +4.3%</td><td>회피 +15%</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>오르카의 외눈 수정</td><td>오르카</td><td>치명 피해</td><td>80</td><td>0.87</td><td>치명 피해 +26%, 방어 관통 +6.9</td><td>치명 피해 +36.4%, 방어 관통 +9.7</td><td>치명 피해 +120%, 방어 관통 +31.1</td><td>최대 체력 +3.5</td><td>최대 체력 +12</td><td>비전 주문력 +2.6</td><td>비전 주문력 +11.7</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>힐라의 관 뚜껑 조각</td><td>힐라</td><td>흡혈</td><td>90</td><td>0.93</td><td>생명력 흡수 +5.6%</td><td>생명력 흡수 +7.8%</td><td>생명력 흡수 +15%</td><td>받는 치유 +7.5%</td><td>받는 치유 +33.4%</td><td>치유 주문력 +2.8</td><td>치유 주문력 +12.5</td></tr>
+<tr><td><span class="b b-b4">묶음 4</span></td><td>베네나의 처형 사슬</td><td>베네나</td><td>파쇄</td><td>100</td><td>1</td><td>방어 파쇄 +20%</td><td>방어 파쇄 +28%</td><td>방어 파쇄 +30%</td><td>방어 +2</td><td>방어 +5</td><td>주문 치명 +5</td><td>주문 치명 +22.4</td></tr>
+</tbody></table></div>
+<p class="src">출처: server-overrides/config/serverguard/crysta.json gems(63) · maple/data/generated/boss_drops.json crysta(효과 글)</p>
+</section>
+<section id="materials"><h2>⑥ 재료 시스템 </h2>
+<div class="tw"><table id="t-mat" class="" data-rows="12">
+<thead><tr><th>재료</th><th>종류</th><th>어디서</th><th>어디에</th></tr></thead><tbody>
+<tr><td>메이플 잡템</td><td>130종(매각표)</td><td>8마을 사냥터 몹</td><td>가공 → 재료 포인트(점수 = 매각가 ÷ 25, 무제한) · 매각 · 마이스터 레시피(분류 잡템 10~20, 마뇽의 꼬리, 용의 정수) · 의뢰 납품</td></tr>
+<tr><td>재료 포인트 6계열</td><td>금속·천·짐승·목재·약품·마나</td><td>가공 · 분해(고루 나누기)</td><td>단조(T1~T4 300~6,000) · 부여(단계당 30~400) · 마이스터(30,000/18,000) · 연금 물약 III~V(약품·마나). 계열당 상한 200,000</td></tr>
+<tr><td>보스 재료</td><td>16종(#serverguard:boss_materials)</td><td>모드 보스 처치(개수 ×1/2/3/5)</td><td>단조 T4 1개 · 명장 2개 · 마이스터 1~2(노멀 권장 ≥ 80 의 6종) · 가공(하루 한도)</td></tr>
+<tr><td>○○의 정수</td><td>보스마다 1</td><td>보스 희귀 드롭 0.1/0.8/2/5%(참여자마다)</td><td>단조 T4 핵심 소재(잠재력 +20 · 최대 단계 +1) · 마이스터 핵심 칸 · 분해는 보스 몫</td></tr>
+<tr><td>정련 원석</td><td>브론즈·미스릴·아다만티움·오리하르콘</td><td>보스 드롭(난이도가 높을수록 높은 등급) · 정예 확정 · 필수품 상점(1,000/5,000/25,000/100,000)</td><td>정련(+0~4 브론즈 · +5~9 미스릴 · +10~12 아다만티움 · +13~14 오리하르콘) · 크리스타 강화 · 마이스터(오리하르콘 2/1)</td></tr>
+<tr><td>네더라이트 주괴</td><td>바닐라</td><td>채굴·제작</td><td>마이스터 레시피 2/1</td></tr>
+<tr><td>크리스타</td><td>63종 × 순도 10</td><td>보스 드롭(난이도별 순도 1~4, 빛나는 희귀)</td><td>◆ 장비·추가/특수 장비 칸에 끼움 · 같은 이름 2개 강화 · 분해(포인트)</td></tr>
+<tr><td>◆ 장비·카탈로그 장비</td><td>카탈로그 1,093</td><td>보스(키트·◆ 표) · 지역 몹 · 정예</td><td>착용 · 단조 바탕(◆ 보너스) · 전승 대상 · 분해 · 매각(미감정)</td></tr>
+<tr><td>전직 증표 2~4차</td><td></td><td>보스 처치 확률 + 공개 천장</td><td>전직 · 분해 가치 37,500/100,000/250,000</td></tr>
+<tr><td>메이플 미니 보스 잡템</td><td>5종</td><td>머쉬맘·주니어 발록·해골 장교장(×1/2/3/5)</td><td>가공 · 매각</td></tr>
+<tr><td>메소</td><td></td><td>매각 · 의뢰 · 몹 동전</td><td>정련 · 단조 · 부여 · 마이스터 · 크리스타 강화·빼기 · 전승 · 수리 · 감정</td></tr>
+<tr><td>정점의 인장 <span class="b b-plan">예정</span></td><td>개인 장부 숫자</td><td>엔드 보스 처치 1/2/4/8(설계)</td><td>정점 상인(설계)</td></tr>
+</tbody></table></div>
+<p class="src">출처: craft_tables.json materials·boss_materials · maple/data/boss_materials.json · boss_gems.json rare · refine.toml oreTier·oreValue · craft_recipes.json · sell_prices.json maple_items</p>
+<div class="tw"><table id="t-bossmat" class="" data-rows="16">
+<thead><tr><th>보스 재료</th><th>아이템</th><th>주는 보스</th><th>출처 노멀 권장 Lv</th></tr></thead><tbody>
+<tr><td>괴상한 뿔</td><td><code>cataclysm:monstrous_horn</code></td><td>자쿰</td><td>100</td></tr>
+<tr><td>이그니티움 주괴</td><td><code>cataclysm:ignitium_ingot</code></td><td>매그너스</td><td>95</td></tr>
+<tr><td>엔더라이트 주괴</td><td><code>cataclysm:enderite_ingot</code></td><td>시그너스</td><td>80</td></tr>
+<tr><td>위더라이트 주괴</td><td><code>cataclysm:witherite_ingot</code></td><td>알리샤르</td><td>80</td></tr>
+<tr><td>고대의 금속 주괴</td><td><code>cataclysm:ancient_metal_ingot</code></td><td>크세르크세스</td><td>60</td></tr>
+<tr><td>고대의 금속 주괴</td><td><code>cataclysm:ancient_metal_ingot</code></td><td>다일</td><td>60</td></tr>
+<tr><td>고대의 금속 주괴</td><td><code>cataclysm:ancient_metal_ingot</code></td><td>킹 스네이크</td><td>60</td></tr>
+<tr><td>커스뮴 주괴</td><td><code>cataclysm:cursium_ingot</code></td><td>헤드리스 호스맨</td><td>90</td></tr>
+<tr><td>폭풍의 정수</td><td><code>cataclysm:essence_of_the_storm</code></td><td>레비아탄</td><td>80</td></tr>
+<tr><td>공허 코어</td><td><code>cataclysm:void_core</code></td><td>듄켈</td><td>60</td></tr>
+<tr><td>빙하수정</td><td><code>mowziesmobs:ice_crystal</code></td><td>그리프</td><td>70</td></tr>
+<tr><td>해의 얼굴</td><td><code>mowziesmobs:sol_visage</code></td><td>피닉스</td><td>50</td></tr>
+<tr><td>고대의 아니마</td><td><code>bosses_of_mass_destruction:ancient_anima</code></td><td>아카이럼</td><td>70</td></tr>
+<tr><td>공허의 가시</td><td><code>bosses_of_mass_destruction:void_thorn</code></td><td>스텀피</td><td>70</td></tr>
+<tr><td>타오르는 눈</td><td><code>bosses_of_mass_destruction:blazing_eye</code></td><td>반반</td><td>70</td></tr>
+<tr><td>흑요석 심장</td><td><code>bosses_of_mass_destruction:obsidian_heart</code></td><td>카웅</td><td>70</td></tr>
+</tbody></table></div>
+<p class="src">출처: maple/data/boss_materials.json materials · craft_recipes.json bossMaterials</p>
+<p>흐름: 사냥(잡템·지역 장비) → 가공·매각 → 포인트·메소 → 단조·부여 / 보스(크리스타·원석·재료·정수·◆ 장비) → 정련·크리스타·T4 단조·명장·마이스터 → 남는 것은 분해(포인트)·매각(메소)으로 다시 순환.</p>
+</section>
+<section id="ops"><h2>⑦ 운영 메모 </h2>
+<h3>끄는 키(되돌리기) </h3>
+<div class="tw"><table id="t-off" class="" data-rows="11">
+<thead><tr><th>키</th><th>지금(저장소)</th><th>끄면</th></tr></thead><tbody>
+<tr><td><code>boss.toml [altar] levelGate</code></td><td>false(묶음 4)</td><td>true = 레벨 제한 되살림(권장 −20)</td></tr>
+<tr><td><code>boss.toml [display] defenseOnly</code></td><td>&quot;all&quot;</td><td>&quot;off&quot; = 옛 표시 · &quot;party&quot; = 파티 보스만</td></tr>
+<tr><td><code>boss.toml [party] aggro / bossHeal / hitCapMult / windowTicks / offTargetMult / shieldWearDiv</code></td><td>shield / div / 1.25 / 20 / 0.5 / true</td><td>off / keep / 0 / 0 / 1.0 / false</td></tr>
+<tr><td><code>boss.toml [end] enabled</code></td><td>false</td><td>엔드 규칙(2단계 전까지 끔)</td></tr>
+<tr><td><code>boss.toml [scale] enabled · [token] enabled · [lock] firstHitLock · [ranged] · [water]</code></td><td>true</td><td>배율·증표·첫 타격 잠금·총 제한·물 보스 안전장치</td></tr>
+<tr><td><code>xp.toml [kill] bossXpOwnLevelCap</code></td><td>true</td><td>false = 보스 XP 상한 끔</td></tr>
+<tr><td><code>gear_catalog.json rules.enabled</code></td><td>true</td><td>false → 생성 → /unique reload(카탈로그 옵션 0)</td></tr>
+<tr><td><code>craft.toml [craft] enabled · masterEnabled · [salvage] enabled</code></td><td>true</td><td>장인·명장·분해 창 막기(만든 장비는 그대로)</td></tr>
+<tr><td><code>craft_recipes.json recipes</code></td><td>13</td><td>비우면 「제작 ▶」 숨김(/craft reload)</td></tr>
+<tr><td><code>refine.toml · crysta.toml · sell.toml · atelier.toml enabled</code></td><td>true</td><td>창만 막음 — 이미 붙은 효과는 그대로</td></tr>
+<tr><td><code>gear.toml [offhand] ratio</code></td><td>0.5</td><td>0 = 보조손 옵션 끔</td></tr>
+</tbody></table></div>
+<p class="src">출처: 각 설정 파일 주석 · rpg/boss-lv140-impl §7</p>
+<h3>reload 로 되는 것 / 재시작이 필요한 것 </h3>
+<div class="tw"><table id="t-reload" class="" data-rows="8">
+<thead><tr><th>구분</th><th>무엇</th><th>명령</th></tr></thead><tbody>
+<tr><td>reload</td><td>bosses.json(hpMult·atkMult·uptime 보정)·MS2 패턴</td><td><code>/rpgboss reload</code></td></tr>
+<tr><td>reload</td><td>gear_catalog.json · unique.json</td><td><code>/unique reload</code></td></tr>
+<tr><td>reload</td><td>craft_tables.json · craft_recipes.json</td><td><code>/craft reload</code></td></tr>
+<tr><td>reload</td><td>sell_prices.json</td><td><code>/sell reload</code></td></tr>
+<tr><td>reload</td><td>codex.json · quest.json</td><td><code>/codex reload</code> → <code>/rpgquest reload</code></td></tr>
+<tr><td>reload</td><td>데이터팩(boss_loot·maple_quest 등 함수·표)</td><td><code>/reload</code></td></tr>
+<tr><td>바로 반영</td><td>boss/spec/craft/gear/refine/crysta/sell .toml 숫자(COMMON 설정 — 파일 바뀌면 다시 읽음)</td><td>— (새 키는 새 jar 가 있어야 의미, 옛 jar 는 새 키를 지우고 .bak)</td></tr>
+<tr><td>재시작</td><td>serverguard jar · 새 모드 8 · boss_mods(structure_set·biome_modifier) · 구조물 NBT(maple_towns)</td><td>Release 먼저(모드 8) → 공지 → 재시작</td></tr>
+</tbody></table></div>
+<p class="src">출처: rpg/boss-lv140-impl §5 · rpg/craft-t5-impl §5 · rpg/boss-expansion-stage1-impl §5</p>
+<h3>묶음 4 재시작 뒤 돌릴 것 <span class="b b-b4">묶음 4</span></h3>
+<ul><li><code>function town:bossstage/build</code></li><li><code>/data remove storage town:bossdoor shown</code></li><li><code>function town:arena/reset</code></li><li><code>function town:ms2stage/build</code> · 차원의 문마다 <code>function town:ms2door/&lt;키&gt;/admin_rebuild</code></li><li><code>function maple:town/leafre/horntail/install</code></li><li>확인: 로그 <code>bosses: 65 boss profile(s), 0 warning(s)</code> · <code>10 row(s) with adapter flags</code> · <code>party rows: 10 · levelGate=false · defenseOnly=all</code> · 믹스인 오류 0 · <code>/craft tables</code> 레시피 13</li><li>실기: 3인 노멀 boss-record → ttk 170~190초 목표, u·atkMult 보정은 <code>party_boss_stats.py --write</code> → bosses.json → <code>/rpgboss reload</code></li></ul>
+<h3>확장 포인트(코드 상수 없이 데이터 한 줄) </h3>
+<div class="tw"><table id="t-extend" class="" data-rows="6">
+<thead><tr><th>늘리는 것</th><th>바꿀 곳</th></tr></thead><tbody>
+<tr><td>만렙 상향(예 160)</td><td>xp.toml caps · gear_catalog.json bands 한 줄 · gear.toml [tiers] 칸 · craft.toml profMax · craft_recipes lvMax · bosses.json 행</td></tr>
+<tr><td>보스 추가</td><td>bosses.json 한 줄(플래그만 고르면 Java 0줄) · boss_names.json · town_bosses.json(결전장) · boss_gems.json 한 줄 · 파티면 party_boss_stats.py --write</td></tr>
+<tr><td>장비</td><td>gear_catalog.json rarities·options·parts·regions·kits 한 줄 → build_gear_catalog → /unique reload(lock 이 기존 아이템을 붙잡음)</td></tr>
+<tr><td>마이스터 레시피</td><td>maple/data/craft_recipes.json recipes 한 줄 → build_craft_recipes → /craft reload(id 영구, 빼기는 retired)</td></tr>
+<tr><td>크리스타 순도</td><td>boss_gems.json purity 한 줄 + crysta.toml 목록 칸(maxPurity)</td></tr>
+<tr><td>엔드 보스</td><td>bosses.json "class": "end" 행 + boss.toml [end] enabled</td></tr>
+</tbody></table></div>
+<p class="src">출처: rpg/gear-catalog-design §7 · rpg/boss-expansion-design §6 · rpg/craft-t5-impl §5</p>
+<h3>남은 결정·할 일 </h3>
+<ul><li>140 대역 옵션 예산 +53% 유지 vs +30%(optMult ≈ 1.105).</li><li>값 없는 모드 무기·방어구(Cataclysm 19·BiC 30·Just Hammers 19) 분해 0 — 조합법 차익 위험 때문에 보류.</li><li>T5 남은 것: 아이콘(cmd 7700~7799 예약) · 가이드북 「마이스터 제작」 · 장인 대사 · 숙련 50 알림.</li><li>보스 2단계: 엔드 9종(+ 설계에만 있는 70~100 대역 7행) · 도발 기술(PartyAggro hold API 위).</li><li>의뢰 Lv140 구간 카드 다수가 파티 보스(일일 43 중 39 · 주간 35 중 28) — 솔로에게 자주 뜸.</li></ul>
+</section>
+<section id="diffs"><h2>부록: 문서와 다른 곳 </h2>
+<div class="tw"><table id="t-diffs" class="" data-rows="14">
+<thead><tr><th>#</th><th>문서</th><th>문서에 적힌 것</th><th>데이터(정본)</th></tr></thead><tbody>
+<tr><td>1</td><td>README.md 보스 루프 절</td><td>HP ×1/1.3/1.6/2.4(hpMultipliers 1.25/1.625/2.0/3.0) · 공격 ×1/1.2/1.45/1.9</td><td>hpMultipliers [1.25, 1.875, 2.5, 5.0] · attackMultipliers [1.0, 1.5, 2.0, 4.0]</td></tr>
+<tr><td>2</td><td>rpg/boss-expansion-design §2-1·D7(엔드 규칙)</td><td>체력 ×1.3/1.6/2.4 · 공격 ×1.2/1.45/1.9 「기존 비율 그대로」</td><td>기존 비율은 이미 ×1.5/2/4(체력) · ×1.5/2/4(공격)</td></tr>
+<tr><td>3</td><td>rpg/horntail-tiers-impl §2</td><td>혼테일 석판 레벨 잠금 권장 −20 · 입구 Lv80</td><td>묶음 4 levelGate=false · 입구 Lv80 검사 삭제</td></tr>
+<tr><td>4</td><td>rpg/boss-expansion-design §0 D1·§1-1</td><td>새 26행 = 70~100 대역 17 + 엔드 9, 블러디퀸 등 10행은 노멀 Lv70~100 솔로</td><td>1단계 10행은 Lv140 3인 파티([140,160,180,200])로 바뀜, 나머지 7행(게그너·마르둘라·피에르·라이카·키피나·차루곤·아바)은 데이터 없음</td></tr>
+<tr><td>5</td><td>작업 지시서(정련 「실패 없음」)</td><td>정련 실패 없음</td><td>refine.toml: 실패하면 −1 단계(파괴 없음), 성공률 95% → 35%</td></tr>
+<tr><td>6</td><td>작업 지시서(enhance*.toml)</td><td>부여/과부여 = enhance*.toml</td><td>enhance*.toml 없음 — 부여·과부여는 craft.toml [craft] + craft_tables.json options(옛 주문서·스타포스는 10-12 폐지)</td></tr>
+<tr><td>7</td><td>README.md 장인 공방 절</td><td>장인 숙련 상한 = 유효 레벨(최대 120)</td><td>craft.toml profMax 140(묶음 4)</td></tr>
+<tr><td>8</td><td>PROGRESS.md 10-24 20:3x 사용자 결정 줄</td><td>T5 크리스타 칸 잠재력 랜덤 0~4</td><td>◆0~4 를 굴려 socketsByGrade 로 칸 0~2(구현 기록·메모리와 같음)</td></tr>
+<tr><td>9</td><td>README.md 보스 루프 절 · 설정 줄</td><td>bosses.json(31 보스) · boss_names 49</td><td>bosses.json 65행 · boss_names.json 66줄</td></tr>
+<tr><td>10</td><td>README.md 보스 루프 절</td><td>크리스타 순도 4단계</td><td>boss_gems.json purity 10단계(6~10 = 묶음 4)</td></tr>
+<tr><td>11</td><td>rpg/gear-catalog-2b-impl</td><td>새 아이템엔 크리스타 칸 없음</td><td>rpg/catalog-sockets-impl 로 보스·네임드 무기·방어구 349종에 난이도 ◆</td></tr>
+<tr><td>12</td><td>spec.toml [spec] ttkSeconds 주석</td><td>노멀 솔로 75초(결정 55)</td><td>값 [150.0, 180.0, 210.0, 350.0]</td></tr>
+<tr><td>13</td><td>rpg/gear-catalog-design §2 예산 표</td><td>140 신화(유니크) 2.85 · 대역 배율 없음</td><td>bands optMult 1.15/1.3 → 140 신화 ≈ 3.71(세대 2)</td></tr>
+<tr><td>14</td><td>rpg/boss-expansion-stage1-impl §2 표</td><td>10행 노멀 Lv70~100 · hpMult 10~35.5</td><td>Lv140 [140,160,180,200] · hpMult 103~437.5 · atkMult 9.01~13.52 · party 3</td></tr>
+</tbody></table></div>
+<p class="src">출처: 본문 비교 결과</p>
+</section>
+<p class="src">생성: scratchpad/sysdoc/build_sysdoc.py(읽기 전용 — 저장소 데이터에서 만듦) · 2026-10-24</p>
+</main></body></html>
